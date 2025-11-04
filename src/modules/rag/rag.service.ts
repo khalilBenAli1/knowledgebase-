@@ -52,9 +52,7 @@ export class RagService {
     const results = await this.chunksRepository
       .createQueryBuilder('chunk')
       .leftJoinAndSelect('chunk.document', 'document')
-      .where('document.status IN (:...statuses)', {
-        statuses: [DocumentStatus.PUBLISHED, DocumentStatus.PARSED, DocumentStatus.APPROVED]
-      })
+      .where('document.status = :status', { status: DocumentStatus.PUBLISHED })
       .orderBy('chunk.embedding <=> :embedding')
       .setParameter('embedding', JSON.stringify(queryEmbedding))
       .limit(topK)

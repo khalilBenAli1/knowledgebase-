@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import api from '../services/api';
 
@@ -138,6 +138,24 @@ export default function LoginPage() {
             </svg>
             <span>Continuer avec Microsoft</span>
           </button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500">Pas encore de compte ?</span>
+            </div>
+          </div>
+
+          {/* Signup Link */}
+          <Link
+            to="/signup"
+            className="block text-center text-biat-primary hover:text-biat-accent font-medium transition-colors text-base"
+          >
+            Créer un compte
+          </Link>
 
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>Besoin d'aide ? Contactez le service IT</p>

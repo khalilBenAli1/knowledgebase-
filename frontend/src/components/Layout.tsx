@@ -5,12 +5,13 @@ export default function Layout() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
 
-  const canAccessDocuments = ['HR Admin', 'Legal Admin', 'IT Admin'].includes(
+  const canAccessDocuments = ['HR Admin', 'Legal Admin'].includes(
     user?.role?.name || '',
   );
   const canAccessAdmin = ['HR Admin', 'IT Admin'].includes(user?.role?.name || '');
-  const canAccessAudit = ['IT Admin', 'Legal Admin'].includes(user?.role?.name || '');
+  const canAccessAudit = ['Legal Admin'].includes(user?.role?.name || '');
   const canAccessUsers = ['IT Admin'].includes(user?.role?.name || '');
+  const isITAdmin = user?.role?.name === 'IT Admin';
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -84,6 +85,18 @@ export default function Layout() {
                   }`}
                 >
                   Utilisateurs
+                </Link>
+              )}
+              {isITAdmin && (
+                <Link
+                  to="/system"
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    isActive('/system')
+                      ? 'bg-white/20 text-white font-semibold'
+                      : 'hover:bg-white/10 text-white/90'
+                  }`}
+                >
+                  Système
                 </Link>
               )}
             </nav>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useAuthStore } from '../store/authStore';
 
 interface User {
   id: string;
@@ -19,11 +20,14 @@ interface Role {
 }
 
 export default function UsersPage() {
+  const { user: currentUser, logout } = useAuthStore();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingRoleChange, setPendingRoleChange] = useState<{ userId: string; roleId: string; userName: string; roleName: string } | null>(null);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteRole, setInviteRole] = useState('');
@@ -55,9 +59,41 @@ export default function UsersPage() {
   };
 
   const handleRoleChange = async (userId: string, roleId: string) => {
+    const targetUser = users.find(u => u.id === userId);
+    const targetRole = roles.find(r => r.id === roleId);
+
+    if (!targetUser || !targetRole) return;
+
+    // Show confirmation modal with user and role info
+    setPendingRoleChange({
+      userId,
+      roleId,
+      userName: targetUser.name,
+      roleName: targetRole.name
+    });
+    setShowConfirmModal(true);
+  };
+
+  const confirmRoleChange = async () => {
+    if (!pendingRoleChange) return;
+
     try {
-      await api.patch(`/admin/users/${userId}/role`, { roleId });
-      loadUsers();
+      await api.patch(`/admin/users/${pendingRoleChange.userId}/role`, { roleId: pendingRoleChange.roleId });
+
+      // Check if admin changed their own role
+      const isChangingOwnRole = pendingRoleChange.userId === currentUser?.id;
+
+      if (isChangingOwnRole) {
+        alert('Votre rôle a été modifié. Vous allez être déconnecté.');
+        setTimeout(() => {
+          logout();
+        }, 1000);
+      } else {
+        loadUsers();
+      }
+
+      setShowConfirmModal(false);
+      setPendingRoleChange(null);
     } catch (error) {
       console.error('Failed to update user role', error);
       alert('Erreur lors de la mise à jour du rôle');
@@ -311,6 +347,50 @@ export default function UsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Role Change Confirmation Modal */}
+      {showConfirmModal && pendingRoleChange && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div className="mb-6">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100 mx-auto mb-4">
+                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-biat-secondary text-center mb-2">Confirmer le changement de rôle</h2>
+              <p className="text-gray-600 text-center">
+                Êtes-vous sûr de vouloir changer le rôle de <span className="font-semibold">{pendingRoleChange.userName}</span> en <span className="font-semibold text-biat-primary">{pendingRoleChange.roleName}</span> ?
+              </p>
+              {pendingRoleChange.userId === currentUser?.id && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800 font-medium">
+                    ⚠️ Attention : Vous modifiez votre propre rôle. Vous serez déconnecté après cette action.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setPendingRoleChange(null);
+                }}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmRoleChange}
+                className="flex-1 bg-biat-primary text-white px-4 py-3 rounded-lg hover:bg-biat-accent transition-all"
+              >
+                Confirmer
+              </button>
+            </div>
           </div>
         </div>
       )}

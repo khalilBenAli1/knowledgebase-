@@ -53,9 +53,9 @@ export class AdminController {
     return this.adminService.inviteUser(inviteDto);
   }
 
-  // Audit Logs with Pagination
+  // Audit Logs with Pagination (Legal Admin ONLY)
   @Get('audit')
-  @Roles(RoleName.IT_ADMIN, RoleName.LEGAL_ADMIN)
+  @Roles(RoleName.LEGAL_ADMIN)
   getAuditLogs(
     @Query('page') page: string = '1',
     @Query('pageSize') pageSize: string = '20',
@@ -68,5 +68,12 @@ export class AdminController {
       sortField,
       sortOrder,
     );
+  }
+
+  // System Status (IT Admin ONLY)
+  @Get('system/status')
+  @Roles(RoleName.IT_ADMIN)
+  getSystemStatus() {
+    return this.adminService.getSystemStatus();
   }
 }

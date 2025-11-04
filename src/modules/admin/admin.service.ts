@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import { ChatSession } from '../../entities/chat-session.entity';
 import { ChatMessage } from '../../entities/chat-message.entity';
 import { Document } from '../../entities/document.entity';
+import { DocumentChunk } from '../../entities/document-chunk.entity';
 import { User } from '../../entities/user.entity';
 import { Role } from '../../entities/role.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
@@ -19,6 +21,8 @@ export class AdminService {
     private messagesRepository: Repository<ChatMessage>,
     @InjectRepository(Document)
     private documentsRepository: Repository<Document>,
+    @InjectRepository(DocumentChunk)
+    private chunksRepository: Repository<DocumentChunk>,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(Role)
@@ -26,6 +30,7 @@ export class AdminService {
     @InjectRepository(AuditLog)
     private auditLogsRepository: Repository<AuditLog>,
     private feedbackService: FeedbackService,
+    private configService: ConfigService,
   ) {}
 
   async getAnalytics(): Promise<any> {
@@ -191,5 +196,70 @@ export class AdminService {
       currentPage: page,
       total,
     };
+  }
+
+  // System Status (IT Admin)
+  async getSystemStatus(): Promise<any> {
+    try {
+      // Database stats
+      const totalUsers = await this.usersRepository.count();
+      const activeUsers = await this.usersRepository.count({ where: { isActive: true } });
+      const totalDocuments = await this.documentsRepository.count();
+      const publishedDocuments = await this.documentsRepository.count({ where: { status: 'published' as any } });
+      const totalChunks = await this.chunksRepository.count();
+      const totalSessions = await this.sessionsRepository.count();
+      const totalMessages = await this.messagesRepository.count();
+      const totalAuditLogs = await this.auditLogsRepository.count();
+
+      // Ollama LLM status
+      const ollamaUrl = this.configService.get('OLLAMA_URL', 'http://localhost:11434');
+      let ollamaStatus = 'offline';
+      let ollamaModels = [];
+
+      try {
+        const response = await fetch(`${ollamaUrl}/api/tags`);
+        if (response.ok) {
+          const data = await response.json();
+          ollamaStatus = 'online';
+          ollamaModels = data.models || [];
+        }
+      } catch (error) {
+        ollamaStatus = 'offline';
+      }
+
+      // Calculate average response time from recent messages
+      const recentMessages = await this.messagesRepository
+        .createQueryBuilder('message')
+        .where('message.role = :role', { role: 'assistant' })
+        .andWhere('message.createdAt > NOW() - INTERVAL \'1 hour\'')
+        .limit(100)
+        .getMany();
+
+      return {
+        database: {
+          users: { total: totalUsers, active: activeUsers },
+          documents: { total: totalDocuments, published: publishedDocuments },
+          chunks: totalChunks,
+          sessions: totalSessions,
+          messages: totalMessages,
+          auditLogs: totalAuditLogs,
+        },
+        llm: {
+          status: ollamaStatus,
+          url: ollamaUrl,
+          models: ollamaModels.map((m: any) => ({
+            name: m.name,
+            size: m.size,
+            modified: m.modified_at,
+          })),
+        },
+        performance: {
+          recentMessagesCount: recentMessages.length,
+          timestamp: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      throw new BadRequestException(`Failed to get system status: ${error.message}`);
+    }
   }
 }

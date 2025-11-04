@@ -1,8 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { User } from '../../entities/user.entity';
+import { Role, RoleName } from '../../entities/role.entity';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction } from '../../entities/audit-log.entity';
 
@@ -12,6 +15,8 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private auditService: AuditService,
+    @InjectRepository(Role)
+    private rolesRepository: Repository<Role>,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -71,5 +76,44 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async signup(signupDto: { name: string; email: string; password: string }, ipAddress?: string, userAgent?: string) {
+    // Check if user already exists
+    const existingUser = await this.usersService.findByEmail(signupDto.email);
+    if (existingUser) {
+      throw new BadRequestException('Un utilisateur avec cet email existe déjà');
+    }
+
+    // Get default "User" role
+    const userRole = await this.rolesRepository.findOne({
+      where: { name: RoleName.USER },
+    });
+
+    if (!userRole) {
+      throw new BadRequestException('Default user role not found');
+    }
+
+    // Create new user
+    const newUser = await this.usersService.create({
+      name: signupDto.name,
+      email: signupDto.email,
+      password: signupDto.password,
+      roleId: userRole.id,
+    });
+
+    // Log signup audit
+    await this.auditService.log({
+      actorId: newUser.id,
+      action: AuditAction.USER_LOGIN,
+      targetType: 'User',
+      targetId: newUser.id,
+      payload: { email: newUser.email, signupMethod: 'email' },
+      ipAddress,
+      userAgent,
+    });
+
+    // Return login token
+    return this.login(newUser, ipAddress, userAgent);
   }
 }

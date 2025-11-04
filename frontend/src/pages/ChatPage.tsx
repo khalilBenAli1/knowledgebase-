@@ -98,9 +98,10 @@ export default function ChatPage() {
       // Mark this as the latest message for typewriter effect
       setLatestMessageId(message.id);
 
-      if (message.sourceRefs && message.sourceRefs.length > 0) {
-        setSelectedSources(message.sourceRefs);
-      }
+      // Source citations hidden per user request
+      // if (message.sourceRefs && message.sourceRefs.length > 0) {
+      //   setSelectedSources(message.sourceRefs);
+      // }
     } catch (error) {
       console.error('Failed to send message', error);
       setMessages((prev) => prev.filter((m) => m.id !== 'temp-user'));
@@ -200,11 +201,12 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {selectedSources.length > 0 && (
+      {/* Source citations hidden per user request */}
+      {/* {selectedSources.length > 0 && (
         <div className="w-80 bg-white border-l border-gray-200 overflow-y-auto">
           <SourcesList sources={selectedSources} />
         </div>
-      )}
+      )} */}
     </div>
   );
 }

@@ -18,6 +18,13 @@ export class AuthController {
     return this.authService.login(req.user, ipAddress, userAgent);
   }
 
+  @Post('signup')
+  async signup(@Request() req, @Body() signupDto: { name: string; email: string; password: string }) {
+    const ipAddress = req.ip;
+    const userAgent = req.headers['user-agent'];
+    return this.authService.signup(signupDto, ipAddress, userAgent);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getProfile(@CurrentUser() user: User) {
