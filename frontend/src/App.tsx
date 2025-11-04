@@ -1,0 +1,40 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+import LoginPage from './pages/LoginPage';
+import ChatPage from './pages/ChatPage';
+import DocumentsPage from './pages/DocumentsPage';
+import AdminPage from './pages/AdminPage';
+import AuditPage from './pages/AuditPage';
+import UsersPage from './pages/UsersPage';
+import Layout from './components/Layout';
+
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const token = useAuthStore((state) => state.token);
+  return token ? <>{children}</> : <Navigate to="/login" />;
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
+          <Route index element={<ChatPage />} />
+          <Route path="documents" element={<DocumentsPage />} />
+          <Route path="admin" element={<AdminPage />} />
+          <Route path="audit" element={<AuditPage />} />
+          <Route path="users" element={<UsersPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
