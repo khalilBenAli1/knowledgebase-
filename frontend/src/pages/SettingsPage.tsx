@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 import { showSuccess, showError } from '../utils/toast';
 import { validatePassword } from '../utils/errorHandler';
@@ -26,6 +28,8 @@ const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const login = useAuthStore((state) => state.login);
   const token = useAuthStore((state) => state.token);
+  const { theme, setTheme } = useTheme();
+  const { language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'preferences'>('profile');
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -149,8 +153,13 @@ const SettingsPage: React.FC = () => {
   };
 
   const handlePreferencesSave = () => {
-    // Save preferences to localStorage for now
+    // Save preferences to localStorage
     localStorage.setItem('userPreferences', JSON.stringify(preferences));
+
+    // Update theme and language contexts
+    setTheme(preferences.theme);
+    setLanguage(preferences.language);
+
     showSuccess('Préférences enregistrées');
   };
 

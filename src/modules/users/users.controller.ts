@@ -19,13 +19,13 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
+  @Roles(RoleName.IT_ADMIN)
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
+  @Roles(RoleName.IT_ADMIN)
   findOne(@Param('id') id: string) {
     return this.usersService.findById(id);
   }

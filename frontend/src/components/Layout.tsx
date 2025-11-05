@@ -23,8 +23,8 @@ export default function Layout() {
   };
 
   return (
-    <div className="h-screen flex flex-col">
-      <header className="bg-gradient-to-r from-biat-primary to-biat-secondary text-white shadow-lg">
+    <div className="h-screen flex flex-col dark:bg-gray-900">
+      <header className="bg-gradient-to-r from-biat-primary to-biat-secondary text-white shadow-lg dark:from-gray-800 dark:to-gray-900">
         <div className="px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
           {/* Logo and Title */}
           <div className="flex items-center space-x-2 md:space-x-3">
@@ -179,7 +179,7 @@ export default function Layout() {
           </div>
         )}
       </header>
-      <main className="flex-1 overflow-hidden bg-gray-50">
+      <main className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900">
         <Outlet />
       </main>
     </div>

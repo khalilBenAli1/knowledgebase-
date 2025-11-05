@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ChatPage from './pages/ChatPage';
@@ -21,45 +23,49 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <Layout />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<ChatPage />} />
-            <Route path="documents" element={<DocumentsPage />} />
-            <Route path="admin" element={<AdminPage />} />
-            <Route path="audit" element={<AuditPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="system" element={<SystemStatusPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
-        </Routes>
+      <ThemeProvider>
+        <LanguageProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Layout />
+                  </PrivateRoute>
+                }
+              >
+                <Route index element={<ChatPage />} />
+                <Route path="documents" element={<DocumentsPage />} />
+                <Route path="admin" element={<AdminPage />} />
+                <Route path="audit" element={<AuditPage />} />
+                <Route path="users" element={<UsersPage />} />
+                <Route path="system" element={<SystemStatusPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
+            </Routes>
 
-        {/* Toast notifications */}
-        <Toaster
-          position="top-right"
-          reverseOrder={false}
-          gutter={8}
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#fff',
-              color: '#134a21',
-              border: '1px solid #1a6b2e',
-              padding: '16px',
-              borderRadius: '8px',
-            },
-          }}
-        />
-      </BrowserRouter>
+            {/* Toast notifications */}
+            <Toaster
+              position="top-right"
+              reverseOrder={false}
+              gutter={8}
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#fff',
+                  color: '#134a21',
+                  border: '1px solid #1a6b2e',
+                  padding: '16px',
+                  borderRadius: '8px',
+                },
+              }}
+            />
+          </BrowserRouter>
+        </LanguageProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

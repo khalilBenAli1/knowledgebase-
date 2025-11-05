@@ -75,8 +75,17 @@ export class DocumentsService {
   }
 
   async approve(id: string, userId: string): Promise<Document> {
-    const document = await this.updateStatus(id, DocumentStatus.APPROVED, userId);
+    const document = await this.findById(id);
 
+    // Set approval details
+    document.approvedBy = userId;
+    document.approvedAt = new Date();
+    // Automatically publish when approved
+    document.status = DocumentStatus.PUBLISHED;
+
+    const updatedDoc = await this.documentsRepository.save(document);
+
+    // Log approval action
     await this.auditService.log({
       actorId: userId,
       action: AuditAction.DOCUMENT_APPROVE,
@@ -85,13 +94,23 @@ export class DocumentsService {
       payload: { documentName: document.name },
     });
 
-    return document;
+    // Log publish action
+    await this.auditService.log({
+      actorId: userId,
+      action: AuditAction.DOCUMENT_PUBLISH,
+      targetType: 'Document',
+      targetId: id,
+      payload: { documentName: document.name },
+    });
+
+    return updatedDoc;
   }
 
   async publish(id: string, userId: string): Promise<Document> {
     const document = await this.findById(id);
 
-    if (document.status !== DocumentStatus.APPROVED) {
+    // Allow publishing if already published (re-publish) or if approved
+    if (document.status !== DocumentStatus.APPROVED && document.status !== DocumentStatus.PUBLISHED) {
       throw new BadRequestException('Document must be approved before publishing');
     }
 

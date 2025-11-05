@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 import ChatMessage from '../components/ChatMessage';
 import SourcesList from '../components/SourcesList';
 import TypingIndicator from '../components/TypingIndicator';
@@ -20,6 +21,7 @@ interface Session {
 }
 
 export default function ChatPage() {
+  const { t } = useLanguage();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -142,7 +144,7 @@ export default function ChatPage() {
       {/* Sidebar */}
       <div className={`
         fixed md:static inset-y-0 left-0 z-50
-        w-64 bg-white border-r border-gray-200 flex flex-col
+        w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
@@ -199,9 +201,9 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
         {/* Mobile Header with Menu Button */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white sticky top-0 z-10">
+        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -239,7 +241,7 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <div className="border-t border-gray-200 p-4 md:p-6 bg-white">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4 md:p-6 bg-white dark:bg-gray-800">
           <div className="w-full px-2 md:px-4">
             <form onSubmit={handleSendMessage}>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -251,8 +253,8 @@ export default function ChatPage() {
                     // Optionally auto-submit when a suggestion is selected
                     // setTimeout(() => handleSendMessage(new Event('submit') as any), 100);
                   }}
-                  placeholder="Posez votre question..."
-                  className="flex-1 px-5 py-4 md:px-6 md:py-5 text-lg md:text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-biat-primary focus:border-biat-primary transition-all shadow-sm"
+                  placeholder={t('chat.placeholder')}
+                  className="flex-1 px-5 py-4 md:px-6 md:py-5 text-lg md:text-xl border-2 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-biat-primary focus:border-biat-primary transition-all shadow-sm"
                   disabled={loading}
                 />
                 <button
@@ -260,7 +262,7 @@ export default function ChatPage() {
                   disabled={loading || !input.trim()}
                   className="bg-biat-primary text-white px-8 py-4 md:px-10 md:py-5 text-lg md:text-xl rounded-xl hover:bg-biat-accent transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg whitespace-nowrap font-semibold"
                 >
-                  {loading ? 'Envoi...' : 'Envoyer'}
+                  {loading ? t('chat.sending') : t('chat.send')}
                 </button>
               </div>
             </form>
