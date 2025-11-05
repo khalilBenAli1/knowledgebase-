@@ -15,6 +15,8 @@ import { FeedbackModule } from './modules/feedback/feedback.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { HealthModule } from './modules/health/health.module';
+import { OcrModule } from './modules/ocr/ocr.module';
+import { SuggestionsModule } from './modules/suggestions/suggestions.module';
 
 @Module({
   imports: [
@@ -29,7 +31,7 @@ import { HealthModule } from './modules/health/health.module';
         url: configService.get('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: configService.get('NODE_ENV') === 'development',
-        logging: configService.get('NODE_ENV') === 'development',
+        logging: false,
       }),
       inject: [ConfigService],
     }),
@@ -54,6 +56,8 @@ import { HealthModule } from './modules/health/health.module';
     AuditModule,
     AdminModule,
     HealthModule,
+    OcrModule,
+    SuggestionsModule,
   ],
 })
 export class AppModule {}

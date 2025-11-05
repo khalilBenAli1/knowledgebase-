@@ -64,6 +64,23 @@ export class ChatService {
     });
   }
 
+  /**
+   * Detect if the message is a casual/polite message that doesn't need document search
+   */
+  private isCasualMessage(message: string): boolean {
+    const casual = message.toLowerCase().trim();
+    const casualPatterns = [
+      /^(merci|thanks|thank you|thx|gracias)$/i,
+      /^(ok|okay|d'accord|compris|bien)$/i,
+      /^(bonjour|salut|hello|hi|bonsoir)$/i,
+      /^(au revoir|bye|goodbye|ciao)$/i,
+      /^(oui|non|yes|no)$/i,
+      /^(super|génial|cool|parfait|excellent)$/i,
+    ];
+
+    return casualPatterns.some(pattern => pattern.test(casual));
+  }
+
   async chat(
     question: string,
     userId: string,
@@ -89,18 +106,40 @@ export class ChatService {
 
     this.logger.log(`User ${userId} asked: ${question}`);
 
-    const { context, sources } = await this.ragService.retrieveContext(question);
-
-    this.logger.log(`Retrieved ${sources.length} relevant chunks`);
-
     let answer: string;
+    let sources: any[] = [];
 
-    if (sources.length === 0 || context.length === 0) {
-      // No documents found - return a standard message instead of letting the LLM hallucinate
-      answer = "Je ne trouve pas cette information dans les documents disponibles. Aucun document n'a encore été téléchargé dans le système. Veuillez contacter le service RH pour plus de détails.";
-      this.logger.warn(`No context found for question: ${question}`);
+    // Handle casual messages without searching documents
+    if (this.isCasualMessage(question)) {
+      const casualResponses = {
+        'merci': 'De rien ! N\'hésitez pas si vous avez d\'autres questions.',
+        'thanks': 'De rien ! N\'hésitez pas si vous avez d\'autres questions.',
+        'ok': 'Parfait ! Je reste à votre disposition pour toute autre question.',
+        'bonjour': 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?',
+        'salut': 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?',
+        'au revoir': 'Au revoir ! N\'hésitez pas à revenir si vous avez besoin d\'aide.',
+        'oui': 'D\'accord ! Autre chose ?',
+        'non': 'Très bien. Autre chose ?',
+        'super': 'Content de pouvoir vous aider !',
+      };
+
+      const key = question.toLowerCase().trim();
+      answer = casualResponses[key] || 'Je reste à votre disposition pour toute question sur les documents.';
+
+      this.logger.log(`Casual message detected, skipping document search`);
     } else {
-      answer = await this.llmService.generateAnswer(question, context);
+      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(question);
+      sources = retrievedSources;
+
+      this.logger.log(`Retrieved ${sources.length} relevant chunks`);
+
+      if (sources.length === 0 || context.length === 0) {
+        // No documents found - return a standard message instead of letting the LLM hallucinate
+        answer = "Je ne trouve pas cette information dans les documents disponibles. Aucun document n'a encore été téléchargé dans le système. Veuillez contacter le service RH pour plus de détails.";
+        this.logger.warn(`No context found for question: ${question}`);
+      } else {
+        answer = await this.llmService.generateAnswer(question, context);
+      }
     }
 
     const assistantMessage = this.messagesRepository.create({
@@ -130,5 +169,22 @@ export class ChatService {
     }
 
     return assistantMessage;
+  }
+
+  async searchMessages(userId: string, query: string, sessionId?: string): Promise<ChatMessage[]> {
+    const queryBuilder = this.messagesRepository
+      .createQueryBuilder('message')
+      .leftJoinAndSelect('message.session', 'session')
+      .where('session.userId = :userId', { userId })
+      .andWhere('message.content ILIKE :query', { query: `%${query}%` });
+
+    if (sessionId) {
+      queryBuilder.andWhere('message.sessionId = :sessionId', { sessionId });
+    }
+
+    return queryBuilder
+      .orderBy('message.createdAt', 'DESC')
+      .limit(50)
+      .getMany();
   }
 }
