@@ -1,0 +1,326 @@
+import { useState, useEffect } from 'react';
+import api from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+
+interface Analytics {
+  users: { total: number };
+  documents: { total: number; published: number };
+  chat: { totalSessions: number; totalMessages: number; averageMessagesPerSession: number };
+  feedback: { total: number; useful: number; notUseful: number; usefulPercentage: number };
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role?: { name: string };
+  createdAt: string;
+}
+
+interface Session {
+  id: string;
+  title: string;
+  startedAt: string;
+  user?: { name: string };
+}
+
+interface Feedback {
+  id: string;
+  rating: string;
+  comment: string;
+  createdAt: string;
+  message?: { content: string };
+}
+
+export default function AdminPage() {
+  const { user } = useAuthStore();
+  const isITAdmin = user?.role?.name === 'IT Admin';
+  const isHRAdmin = user?.role?.name === 'HR Admin';
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<'users' | 'sessions' | 'feedback' | null>(null);
+  const [modalData, setModalData] = useState<any[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
+
+  const loadAnalytics = async () => {
+    try {
+      const response = await api.get('/admin/analytics');
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error('Failed to load analytics', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatClick = async (type: 'users' | 'sessions' | 'feedback') => {
+    setModalType(type);
+    setShowModal(true);
+    setModalLoading(true);
+
+    try {
+      let response;
+      switch (type) {
+        case 'users':
+          response = await api.get('/admin/users');
+          break;
+        case 'sessions':
+          response = await api.get('/chat/sessions/all'); // All sessions endpoint
+          break;
+        case 'feedback':
+          response = await api.get('/feedback/all');
+          break;
+      }
+      setModalData(response.data);
+    } catch (error) {
+      console.error(`Failed to load ${type}`, error);
+      setModalData([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setModalType(null);
+    setModalData([]);
+  };
+
+  if (loading) {
+    return <div className="p-8">Chargement...</div>;
+  }
+
+  if (!analytics) {
+    return <div className="p-8">Aucune donnée disponible</div>;
+  }
+
+  return (
+    <div className="p-8 bg-gray-50 min-h-full">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-biat-primary mb-8">Tableau de Bord</h1>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Users Card - Show for both IT Admin and HR Admin */}
+          <button
+            onClick={() => handleStatClick('users')}
+            className="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm font-medium text-gray-600">Utilisateurs</div>
+              <div className="p-3 bg-biat-50 rounded-lg group-hover:bg-biat-100 transition-colors">
+                <svg className="w-6 h-6 text-biat-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-biat-primary group-hover:text-biat-accent transition-colors">
+              {analytics.users.total}
+            </div>
+            <div className="text-xs text-gray-500 mt-2">Cliquez pour voir la liste</div>
+          </button>
+
+          {/* Documents Card - HR Admin ONLY */}
+          {isHRAdmin && (
+            <button
+              onClick={() => navigate('/documents')}
+              className="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all text-left group cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm font-medium text-gray-600">Documents Publiés</div>
+                <div className="p-3 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-green-600 group-hover:text-green-700 transition-colors">
+                {analytics.documents.published}
+              </div>
+              <div className="text-xs text-gray-500 mt-2">
+                sur {analytics.documents.total} total
+              </div>
+            </button>
+          )}
+
+          {/* Sessions Card - HR Admin ONLY */}
+          {isHRAdmin && (
+            <button
+              onClick={() => handleStatClick('sessions')}
+              className="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all text-left group cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm font-medium text-gray-600">Sessions de Chat</div>
+                <div className="p-3 bg-biat-100 rounded-lg group-hover:bg-biat-200 transition-colors">
+                  <svg className="w-6 h-6 text-biat-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-biat-accent group-hover:text-biat-primary transition-colors">
+                {analytics.chat.totalSessions}
+              </div>
+              <div className="text-xs text-gray-500 mt-2">
+                {analytics.chat.totalMessages} messages
+              </div>
+            </button>
+          )}
+
+          {/* Satisfaction Card - HR Admin ONLY */}
+          {isHRAdmin && (
+            <button
+              onClick={() => handleStatClick('feedback')}
+              className="bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all text-left group cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm font-medium text-gray-600">Satisfaction</div>
+                <div className="p-3 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-green-600 group-hover:text-green-700 transition-colors">
+                {analytics.feedback.usefulPercentage.toFixed(1)}%
+              </div>
+              <div className="text-xs text-gray-500 mt-2">
+                {analytics.feedback.useful} / {analytics.feedback.total} feedbacks
+              </div>
+            </button>
+          )}
+        </div>
+
+        {/* Detailed Stats - HR Admin ONLY */}
+        {isHRAdmin && (
+          <div className="bg-white p-8 rounded-xl shadow-md border border-gray-200">
+            <h2 className="text-xl font-bold text-biat-primary mb-6">Statistiques Détaillées</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 bg-biat-50 rounded-lg border border-biat-100">
+              <div className="text-sm font-medium text-gray-600 mb-2">Messages par session (moyenne)</div>
+              <div className="text-2xl font-bold text-biat-primary">
+                {analytics.chat.averageMessagesPerSession.toFixed(1)}
+              </div>
+            </div>
+            <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+              <div className="text-sm font-medium text-gray-600 mb-2">Feedbacks négatifs</div>
+              <div className="text-2xl font-bold text-red-600">{analytics.feedback.notUseful}</div>
+            </div>
+          </div>
+        </div>
+        )}
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-biat-primary">
+                {modalType === 'users' && 'Liste des Utilisateurs'}
+                {modalType === 'sessions' && 'Sessions de Chat'}
+                {modalType === 'feedback' && 'Feedbacks'}
+              </h2>
+              <button
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-auto p-6">
+              {modalLoading ? (
+                <div className="text-center py-8 text-biat-primary">Chargement...</div>
+              ) : (
+                <div className="space-y-3">
+                  {modalType === 'users' && (
+                    <div className="space-y-2">
+                      {(modalData as User[]).map((user) => (
+                        <div key={user.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-biat-secondary">{user.name}</div>
+                              <div className="text-sm text-gray-600">{user.email}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xs px-2 py-1 bg-biat-100 text-biat-700 rounded-full">
+                                {user.role?.name || 'No Role'}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {new Date(user.createdAt).toLocaleDateString('fr-FR')}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {modalType === 'sessions' && (
+                    <div className="space-y-2">
+                      {(modalData as Session[]).map((session) => (
+                        <div key={session.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold text-biat-secondary">{session.title}</div>
+                              <div className="text-sm text-gray-600">{session.user?.name || 'Unknown User'}</div>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(session.startedAt).toLocaleString('fr-FR')}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {modalType === 'feedback' && (
+                    <div className="space-y-2">
+                      {(modalData as Feedback[]).map((feedback) => (
+                        <div key={feedback.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              feedback.rating === 'useful'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                              {feedback.rating === 'useful' ? '👍 Utile' : '👎 Pas utile'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(feedback.createdAt).toLocaleString('fr-FR')}
+                            </span>
+                          </div>
+                          {feedback.comment && (
+                            <div className="text-sm text-gray-700 italic">"{feedback.comment}"</div>
+                          )}
+                          {feedback.message && (
+                            <div className="text-xs text-gray-500 mt-2 truncate">
+                              Message: {feedback.message.content}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {modalData.length === 0 && !modalLoading && (
+                    <div className="text-center py-8 text-gray-500">Aucune donnée disponible</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

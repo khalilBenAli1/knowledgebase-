@@ -9,6 +9,7 @@ export enum AuditAction {
   DOCUMENT_PUBLISH = 'document_publish',
   DOCUMENT_UNPUBLISH = 'document_unpublish',
   DOCUMENT_DELETE = 'document_delete',
+  DOCUMENT_PROCESSED = 'document_processed',
   CHAT_QUERY = 'chat_query',
   FEEDBACK_SUBMIT = 'feedback_submit',
   USER_CREATE = 'user_create',

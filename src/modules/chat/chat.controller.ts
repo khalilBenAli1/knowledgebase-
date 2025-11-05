@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -47,5 +47,14 @@ export class ChatController {
       sessionId: message.sessionId,
       message,
     };
+  }
+
+  @Get('search')
+  async searchMessages(
+    @CurrentUser() user: User,
+    @Query('q') query: string,
+    @Query('sessionId') sessionId?: string,
+  ) {
+    return this.chatService.searchMessages(user.id, query, sessionId);
   }
 }

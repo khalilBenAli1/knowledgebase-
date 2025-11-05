@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import PDFViewer from '../components/PDFViewer';
 
 interface Document {
   id: string;
@@ -21,6 +22,9 @@ export default function DocumentsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showPDFViewer, setShowPDFViewer] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string>('');
+  const [processingOcr, setProcessingOcr] = useState<string | null>(null);
   const { user } = useAuthStore();
 
   const isHRAdmin = user?.role?.name === 'HR Admin';
@@ -117,6 +121,49 @@ export default function DocumentsPage() {
     }
   };
 
+  const handleViewPDF = async (doc: Document) => {
+    try {
+      // Check if document is PDF
+      if (!doc.originalFilename.toLowerCase().endsWith('.pdf')) {
+        alert('Seuls les fichiers PDF peuvent être prévisualisés');
+        return;
+      }
+
+      const response = await api.get(`/documents/${doc.id}/download`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      setPdfUrl(url);
+      setShowPDFViewer(true);
+      setShowPreviewModal(false);
+    } catch (error) {
+      console.error('Failed to load PDF', error);
+      alert('Erreur lors du chargement du PDF');
+    }
+  };
+
+  const closePDFViewer = () => {
+    setShowPDFViewer(false);
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl);
+      setPdfUrl('');
+    }
+  };
+
+  const handleOCR = async (docId: string) => {
+    try {
+      setProcessingOcr(docId);
+      const response = await api.post(`/ocr/process/${docId}`);
+      alert(`OCR terminé! ${response.data.extractedTextLength} caractères extraits.`);
+      loadDocuments(); // Refresh to show OCR status
+    } catch (error: any) {
+      console.error('OCR failed:', error);
+      alert(error.response?.data?.message || 'Erreur lors de l\'extraction OCR');
+    } finally {
+      setProcessingOcr(null);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       uploaded: 'bg-gray-100 text-gray-700 border border-gray-300',
@@ -146,16 +193,16 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-full">
+    <div className="p-3 md:p-6 lg:p-8 bg-gray-50 min-h-full">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-biat-primary">Gestion des Documents</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-biat-primary">Gestion des Documents</h1>
           {isHRAdmin && (
-            <label className="bg-biat-primary text-white px-6 py-3 rounded-lg cursor-pointer hover:bg-biat-accent transition-all shadow-sm hover:shadow-md flex items-center space-x-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <label className="bg-biat-primary text-white px-4 md:px-6 py-2 md:py-3 rounded-lg cursor-pointer hover:bg-biat-accent transition-all shadow-sm hover:shadow-md flex items-center justify-center space-x-2 text-sm md:text-base">
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <span>{uploading ? 'Upload...' : 'Uploader un document'}</span>
+              <span>{uploading ? 'Upload...' : 'Uploader'}</span>
               <input
                 type="file"
                 onChange={handleFileUpload}
@@ -219,8 +266,8 @@ export default function DocumentsPage() {
           </div>
         </div>
 
-        {/* Documents Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+        {/* Documents - Desktop Table */}
+        <div className="hidden md:block bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-biat-50">
               <tr>
@@ -288,6 +335,24 @@ export default function DocumentsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                       </button>
+                      {(isHRAdmin || isLegalAdmin || isITAdmin) && (
+                        <button
+                          onClick={() => handleOCR(doc.id)}
+                          disabled={processingOcr === doc.id}
+                          className="text-purple-600 hover:text-purple-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Extraire le texte (OCR)"
+                        >
+                          {processingOcr === doc.id ? (
+                            <svg className="w-5 h-5 inline animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
                       {doc.status === 'uploaded' && (isHRAdmin || isITAdmin) && (
                         <button
                           onClick={() => handleProcess(doc.id)}
@@ -319,30 +384,138 @@ export default function DocumentsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Documents - Mobile Cards */}
+        <div className="md:hidden space-y-4">
+          {filteredDocuments.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-md p-6 text-center text-gray-500">
+              Aucun document trouvé
+            </div>
+          ) : (
+            filteredDocuments.map((doc) => (
+              <div key={doc.id} className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
+                <div className="mb-3">
+                  <h3 className="text-base font-semibold text-biat-secondary mb-1">{doc.name}</h3>
+                  <p className="text-xs text-gray-500">{doc.originalFilename}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                  <div>
+                    <span className="text-xs text-gray-600">Statut:</span>
+                    <div className="mt-1">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(doc.status)}`}>
+                        {doc.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-gray-600">Version:</span>
+                    <p className="mt-1 font-medium">{doc.version}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-xs text-gray-600">Date:</span>
+                    <p className="mt-1 font-medium">{new Date(doc.createdAt).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handlePreview(doc)}
+                    className="flex-1 min-w-[100px] bg-biat-primary text-white px-3 py-2 rounded-lg hover:bg-biat-accent transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    Voir
+                  </button>
+                  <button
+                    onClick={() => handleDownload(doc)}
+                    className="flex-1 min-w-[100px] bg-gray-600 text-white px-3 py-2 rounded-lg hover:bg-gray-700 transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Télécharger
+                  </button>
+                  {(isHRAdmin || isLegalAdmin || isITAdmin) && (
+                    <button
+                      onClick={() => handleOCR(doc.id)}
+                      disabled={processingOcr === doc.id}
+                      className="flex-1 min-w-[100px] bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {processingOcr === doc.id ? (
+                        <>
+                          <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          OCR...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          OCR
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {/* Admin Actions */}
+                {doc.status === 'uploaded' && (isHRAdmin || isITAdmin) && (
+                  <button
+                    onClick={() => handleProcess(doc.id)}
+                    className="w-full mt-2 bg-biat-primary text-white px-3 py-2 rounded-lg hover:bg-biat-accent transition-all text-sm"
+                  >
+                    Traiter le document
+                  </button>
+                )}
+                {doc.status === 'parsed' && isLegalAdmin && (
+                  <button
+                    onClick={() => handleApprove(doc.id)}
+                    className="w-full mt-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-all text-sm"
+                  >
+                    Approuver
+                  </button>
+                )}
+                {doc.status === 'approved' && isHRAdmin && (
+                  <button
+                    onClick={() => handlePublish(doc.id)}
+                    className="w-full mt-2 bg-biat-primary text-white px-3 py-2 rounded-lg hover:bg-biat-accent transition-all text-sm"
+                  >
+                    Publier
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Preview Modal */}
       {showPreviewModal && selectedDocument && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <div>
-                <h2 className="text-2xl font-bold text-biat-primary">{selectedDocument.name}</h2>
-                <p className="text-sm text-gray-500 mt-1">{selectedDocument.originalFilename}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4">
+          <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-start p-4 md:p-6 border-b border-gray-200">
+              <div className="flex-1 mr-4">
+                <h2 className="text-lg md:text-2xl font-bold text-biat-primary break-words">{selectedDocument.name}</h2>
+                <p className="text-xs md:text-sm text-gray-500 mt-1 break-all">{selectedDocument.originalFilename}</p>
               </div>
               <button
                 onClick={() => setShowPreviewModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto p-6">
-              <div className="bg-gray-100 rounded-lg p-6 mb-4">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="flex-1 overflow-auto p-3 md:p-6">
+              <div className="bg-gray-100 rounded-lg p-3 md:p-6 mb-3 md:mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div>
                     <span className="text-sm font-medium text-gray-600">Statut:</span>
                     <span className={`ml-2 px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedDocument.status)}`}>
@@ -367,26 +540,50 @@ export default function DocumentsPage() {
               </div>
 
               {/* PDF Preview Placeholder */}
-              <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg h-96 flex items-center justify-center">
-                <div className="text-center">
-                  <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg h-64 md:h-96 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <svg className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 md:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
-                  <p className="text-gray-600 mb-2">Prévisualisation du document</p>
-                  <p className="text-sm text-gray-500">
-                    La prévisualisation PDF sera disponible prochainement
+                  <p className="text-gray-600 mb-2 text-sm md:text-base">Prévisualisation du document</p>
+                  <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
+                    {selectedDocument.originalFilename.toLowerCase().endsWith('.pdf')
+                      ? 'Cliquez sur le bouton pour ouvrir le lecteur PDF'
+                      : 'Seuls les fichiers PDF peuvent être prévisualisés'}
                   </p>
-                  <button
-                    onClick={() => handleDownload(selectedDocument)}
-                    className="mt-4 bg-biat-primary text-white px-6 py-2 rounded-lg hover:bg-biat-accent transition-all"
-                  >
-                    Télécharger pour visualiser
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center">
+                    {selectedDocument.originalFilename.toLowerCase().endsWith('.pdf') && (
+                      <button
+                        onClick={() => handleViewPDF(selectedDocument)}
+                        className="bg-biat-primary text-white px-4 md:px-6 py-2 rounded-lg hover:bg-biat-accent transition-all flex items-center justify-center gap-2 text-sm md:text-base shadow-md hover:shadow-lg"
+                      >
+                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Ouvrir le PDF
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDownload(selectedDocument)}
+                      className="bg-gray-600 text-white px-4 md:px-6 py-2 rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center gap-2 text-sm md:text-base"
+                    >
+                      <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Télécharger
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* PDF Viewer */}
+      {showPDFViewer && pdfUrl && (
+        <PDFViewer fileUrl={pdfUrl} onClose={closePDFViewer} />
       )}
     </div>
   );

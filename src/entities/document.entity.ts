@@ -59,6 +59,12 @@ export class Document {
   @Column({ nullable: true })
   approvedAt: Date;
 
+  @Column({ nullable: true, type: 'text' })
+  ocrText: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  ocrProcessedAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const login = useAuthStore((state) => state.login);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +42,7 @@ export default function SignupPage() {
         password,
       });
 
-      setAuth(response.data.access_token, response.data.user);
+      login(response.data.access_token, response.data.user);
       navigate('/');
     } catch (err: any) {
       console.error('Signup failed:', err);
