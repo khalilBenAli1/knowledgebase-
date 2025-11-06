@@ -17,6 +17,8 @@ import { AdminModule } from './modules/admin/admin.module';
 import { HealthModule } from './modules/health/health.module';
 import { OcrModule } from './modules/ocr/ocr.module';
 import { SuggestionsModule } from './modules/suggestions/suggestions.module';
+import { ActualitiesModule } from './modules/actualities/actualities.module';
+import { FormationsModule } from './modules/formations/formations.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { SuggestionsModule } from './modules/suggestions/suggestions.module';
     HealthModule,
     OcrModule,
     SuggestionsModule,
+    ActualitiesModule,
+    FormationsModule,
   ],
 })
 export class AppModule {}

@@ -50,7 +50,7 @@ const COLORS = ['#134a21', '#1a6b2e', '#2d8a45', '#4aa964'];
 export default function AdminPage() {
   const { user } = useAuthStore();
   const isITAdmin = user?.role?.name === 'IT Admin';
-  const isHRAdmin = user?.role?.name === 'HR Admin';
+  const isHRAdmin = user?.role?.name === 'Gestionnaire RH';
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeSeriesData, setTimeSeriesData] = useState(generateMockTimeSeriesData(7));
@@ -139,17 +139,16 @@ export default function AdminPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Users Card */}
-          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all cursor-pointer group"
-            onClick={() => navigate('/users')}>
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-gray-200">
             <div className="flex items-center justify-between mb-3 md:mb-4">
               <div className="text-xs md:text-sm font-medium text-gray-600">Utilisateurs</div>
-              <div className="p-2 md:p-3 bg-primary-50 rounded-lg group-hover:bg-primary-100 transition-colors">
+              <div className="p-2 md:p-3 bg-primary-50 rounded-lg">
                 <svg className="w-5 h-5 md:w-6 md:h-6 text-biat-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-biat-primary group-hover:text-biat-accent transition-colors">
+            <div className="text-2xl md:text-3xl font-bold text-biat-primary">
               {analytics.users.total}
             </div>
             <div className="text-xs text-gray-500 mt-2 flex items-center gap-1">

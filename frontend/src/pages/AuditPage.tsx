@@ -109,13 +109,13 @@ export default function AuditPage() {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-full">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-biat-primary mb-8">Journal d'Audit</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-biat-primary mb-4 md:mb-8">Journal d'Audit</h1>
 
         {/* Filters Section */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-biat-primary mb-4">Filtres et Recherche</h2>
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+          <h2 className="text-base md:text-lg font-semibold text-biat-primary mb-3 md:mb-4">Filtres et Recherche</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
@@ -196,7 +196,7 @@ export default function AuditPage() {
 
         {/* Table */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-w-full">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-biat-50">
                 <tr>

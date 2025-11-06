@@ -8,12 +8,13 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  const canAccessDocuments = ['HR Admin', 'Legal Admin'].includes(
+  const canAccessDocuments = ['Gestionnaire RH', 'Responsable RH'].includes(
     user?.role?.name || '',
   );
-  const canAccessAdmin = ['HR Admin', 'IT Admin'].includes(user?.role?.name || '');
-  const canAccessAudit = ['Legal Admin'].includes(user?.role?.name || '');
+  const canAccessAdmin = ['Gestionnaire RH', 'IT Admin'].includes(user?.role?.name || '');
+  const canAccessAudit = ['Responsable RH'].includes(user?.role?.name || '');
   const canAccessUsers = ['IT Admin'].includes(user?.role?.name || '');
+  const canAccessAccueil = ['Gestionnaire RH', 'Responsable RH'].includes(user?.role?.name || '');
   const isITAdmin = user?.role?.name === 'IT Admin';
 
   const isActive = (path: string) => location.pathname === path;
@@ -29,8 +30,8 @@ export default function Layout() {
           {/* Logo and Title */}
           <div className="flex items-center space-x-2 md:space-x-3">
             <div className="bg-white p-1.5 md:p-2 rounded-lg">
-              <svg className="w-6 h-6 md:w-8 md:h-8 text-biat-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+              <svg className="w-6 h-6 md:w-8 md:h-8 text-biat-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C10.9 2 10 2.9 10 4V5H8C6.9 5 6 5.9 6 7V9C4.9 9 4 9.9 4 11V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V11C20 9.9 19.1 9 18 9V7C18 5.9 17.1 5 16 5H14V4C14 2.9 13.1 2 12 2M10 7H14V9H10V7M9 11C9.6 11 10 11.4 10 12C10 12.6 9.6 13 9 13C8.4 13 8 12.6 8 12C8 11.4 8.4 11 9 11M15 11C15.6 11 16 11.4 16 12C16 12.6 15.6 13 15 13C14.4 13 14 12.6 14 12C14 11.4 14.4 11 15 11M8.5 15H15.5C15.8 15 16 15.2 16 15.5C16 16.9 14.4 18 12 18C9.6 18 8 16.9 8 15.5C8 15.2 8.2 15 8.5 15Z"/>
               </svg>
             </div>
             <h1 className="text-base md:text-xl font-bold truncate">Assurances BIAT</h1>
@@ -39,7 +40,16 @@ export default function Layout() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex space-x-1">
             <Link to="/" className={`px-4 py-2 rounded-lg transition-all ${isActive('/') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-              Chat
+              Accueil
+            </Link>
+            <Link to="/chat" className={`px-4 py-2 rounded-lg transition-all ${isActive('/chat') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+              Assistant RH
+            </Link>
+            <Link to="/actualites" className={`px-4 py-2 rounded-lg transition-all ${isActive('/actualites') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+              Actualités
+            </Link>
+            <Link to="/formations" className={`px-4 py-2 rounded-lg transition-all ${isActive('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+              Formations
             </Link>
             {canAccessDocuments && (
               <Link to="/documents" className={`px-4 py-2 rounded-lg transition-all ${isActive('/documents') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
@@ -48,12 +58,12 @@ export default function Layout() {
             )}
             {canAccessAdmin && (
               <Link to="/admin" className={`px-4 py-2 rounded-lg transition-all ${isActive('/admin') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Admin
+                Tableau de bord
               </Link>
             )}
             {canAccessAudit && (
               <Link to="/audit" className={`px-4 py-2 rounded-lg transition-all ${isActive('/audit') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Audit
+                Journal d'audit
               </Link>
             )}
             {canAccessUsers && (
@@ -136,7 +146,16 @@ export default function Layout() {
           <div className="md:hidden border-t border-white/20 bg-biat-secondary/50 backdrop-blur-sm">
             <nav className="px-4 py-3 space-y-1">
               <Link to="/" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Chat
+                Accueil
+              </Link>
+              <Link to="/chat" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/chat') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Assistant RH
+              </Link>
+              <Link to="/actualites" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/actualites') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Actualités
+              </Link>
+              <Link to="/formations" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Formations
               </Link>
               {canAccessDocuments && (
                 <Link to="/documents" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/documents') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
@@ -145,12 +164,12 @@ export default function Layout() {
               )}
               {canAccessAdmin && (
                 <Link to="/admin" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/admin') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Administration
+                  Tableau de bord
                 </Link>
               )}
               {canAccessAudit && (
                 <Link to="/audit" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/audit') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Audit
+                  Journal d'audit
                 </Link>
               )}
               {canAccessUsers && (
@@ -179,7 +198,7 @@ export default function Layout() {
           </div>
         )}
       </header>
-      <main className="flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900">
+      <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
         <Outlet />
       </main>
     </div>

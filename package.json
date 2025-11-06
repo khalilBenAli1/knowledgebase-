@@ -24,7 +24,8 @@
     "migration:generate": "typeorm migration:generate",
     "migration:run": "typeorm migration:run",
     "migration:revert": "typeorm migration:revert",
-    "seed": "ts-node -r tsconfig-paths/register src/scripts/seed.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/scripts/seed.ts",
+    "roles":"ts-node src/scripts/update-roles.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",

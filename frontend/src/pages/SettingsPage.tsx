@@ -224,12 +224,28 @@ const SettingsPage: React.FC = () => {
                 {profileForm.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                <input
+                  type="file"
+                  id="avatar-upload"
+                  accept="image/jpeg,image/png,image/gif"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 2 * 1024 * 1024) {
+                        showError('La taille du fichier ne doit pas dépasser 2MB');
+                        return;
+                      }
+                      showSuccess('Fonctionnalité à venir - L\'upload d\'avatar sera disponible prochainement');
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="avatar-upload"
+                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer inline-block"
                 >
                   Changer l'avatar
-                </button>
+                </label>
                 <p className="text-xs text-gray-500 mt-1">
                   JPG, PNG ou GIF. Max 2MB.
                 </p>

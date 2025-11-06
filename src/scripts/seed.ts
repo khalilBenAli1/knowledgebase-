@@ -30,9 +30,9 @@ async function seed() {
       const roleInsertResult = await queryRunner.query(`
         INSERT INTO roles (name, permissions, "createdAt")
         VALUES
-          ('User', '{}', NOW()),
-          ('HR Admin', '{}', NOW()),
-          ('Legal Admin', '{}', NOW()),
+          ('Collaborateur', '{}', NOW()),
+          ('Gestionnaire RH', '{}', NOW()),
+          ('Responsable RH', '{}', NOW()),
           ('IT Admin', '{}', NOW())
         RETURNING id, name
       `);

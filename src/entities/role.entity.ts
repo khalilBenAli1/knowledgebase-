@@ -1,9 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
 export enum RoleName {
-  USER = 'User',
-  HR_ADMIN = 'HR Admin',
-  LEGAL_ADMIN = 'Legal Admin',
+  USER = 'Collaborateur',
+  HR_ADMIN = 'Gestionnaire RH',
+  LEGAL_ADMIN = 'Responsable RH',
   IT_ADMIN = 'IT Admin',
 }
 

@@ -5,7 +5,10 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import AccueilPage from './pages/AccueilPage';
 import ChatPage from './pages/ChatPage';
+import ActualitiesPage from './pages/ActualitiesPage';
+import FormationsPage from './pages/FormationsPage';
 import DocumentsPage from './pages/DocumentsPage';
 import AdminPage from './pages/AdminPage';
 import AuditPage from './pages/AuditPage';
@@ -37,7 +40,10 @@ function App() {
                   </PrivateRoute>
                 }
               >
-                <Route index element={<ChatPage />} />
+                <Route index element={<AccueilPage />} />
+                <Route path="chat" element={<ChatPage />} />
+                <Route path="actualites" element={<ActualitiesPage />} />
+                <Route path="formations" element={<FormationsPage />} />
                 <Route path="documents" element={<DocumentsPage />} />
                 <Route path="admin" element={<AdminPage />} />
                 <Route path="audit" element={<AuditPage />} />
