@@ -4,20 +4,20 @@ import axios from 'axios';
 import { LLMProvider, LLMConfig } from '../interfaces/llm-provider.interface';
 
 @Injectable()
-export class OllamaProvider implements LLMProvider {
-  private readonly logger = new Logger(OllamaProvider.name);
+export class GroqProvider implements LLMProvider {
+  private readonly logger = new Logger(GroqProvider.name);
   private readonly config: LLMConfig;
+  private readonly apiKey: string;
+  private readonly endpoint = 'https://api.groq.com/openai/v1';
 
   constructor(private configService: ConfigService) {
+    this.apiKey = this.configService.get<string>('LLM_API_KEY', '');
     this.config = {
-      provider: 'ollama',
-      endpoint: this.configService.get<string>('LLM_ENDPOINT', 'http://localhost:11434'),
-      model: this.configService.get<string>('LLM_MODEL', 'llama3'),
+      provider: 'groq',
+      endpoint: this.endpoint,
+      model: this.configService.get<string>('LLM_MODEL', 'llama-3.1-70b-versatile'),
       temperature: parseFloat(this.configService.get<string>('LLM_TEMPERATURE', '0.3')),
       maxTokens: parseInt(this.configService.get<string>('LLM_MAX_TOKENS', '1000')),
-      numThreads: parseInt(this.configService.get<string>('LLM_NUM_THREADS', '4')),
-      numGpu: parseInt(this.configService.get<string>('LLM_GPU_LAYERS', '0')),
-      numCtx: parseInt(this.configService.get<string>('LLM_CONTEXT_SIZE', '2048')),
     };
   }
 
@@ -26,38 +26,41 @@ export class OllamaProvider implements LLMProvider {
     try {
       fullPrompt = this.buildPrompt(prompt, context);
 
-      this.logger.debug(`Sending request to Ollama: ${this.config.endpoint}`);
+      this.logger.debug(`Sending request to Groq: ${this.config.endpoint}`);
       this.logger.debug(`Prompt length: ${fullPrompt.length} characters, Context chunks: ${context.length}`);
 
       const response = await axios.post(
-        `${this.config.endpoint}/api/generate`,
+        `${this.config.endpoint}/chat/completions`,
         {
           model: this.config.model,
-          prompt: fullPrompt,
-          stream: false,
-          options: {
-            temperature: this.config.temperature,
-            num_predict: this.config.maxTokens,
-            num_thread: this.config.numThreads,
-            num_gpu: this.config.numGpu,
-            num_ctx: this.config.numCtx,
-          },
+          messages: [
+            {
+              role: 'user',
+              content: fullPrompt,
+            },
+          ],
+          temperature: this.config.temperature,
+          max_tokens: this.config.maxTokens,
         },
         {
-          timeout: 60000,
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
         },
       );
 
-      return response.data.response;
+      return response.data.choices[0].message.content;
     } catch (error) {
-      console.error('=== OLLAMA API ERROR DETAILS ===');
+      console.error('=== GROQ API ERROR DETAILS ===');
       console.error('Message:', error.message);
       console.error('Status:', error.response?.status);
       console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
       console.error('Prompt length:', fullPrompt.length);
       console.error('Context chunks:', context.length);
       console.error('================================');
-      this.logger.error('Error calling Ollama API', {
+      this.logger.error('Error calling Groq API', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
@@ -67,14 +70,20 @@ export class OllamaProvider implements LLMProvider {
   }
 
   async embed(text: string): Promise<number[]> {
-    try {
-      const embeddingModel = this.configService.get<string>(
-        'EMBEDDING_MODEL',
-        'sentence-transformers/all-MiniLM-L6-v2',
-      );
+    // Groq doesn't provide embeddings API, so we'll still use Ollama for embeddings
+    // Or you could use a different embedding service
+    const embeddingModel = this.configService.get<string>(
+      'EMBEDDING_MODEL',
+      'nomic-embed-text',
+    );
+    const ollamaEndpoint = this.configService.get<string>(
+      'LLM_ENDPOINT',
+      'http://localhost:11434',
+    );
 
+    try {
       const response = await axios.post(
-        `${this.config.endpoint}/api/embeddings`,
+        `${ollamaEndpoint}/api/embeddings`,
         {
           model: embeddingModel,
           prompt: text,

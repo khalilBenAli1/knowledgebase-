@@ -1,15 +1,24 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LLMService } from './llm.service';
 import { OllamaProvider } from './providers/ollama.provider';
+import { GroqProvider } from './providers/groq.provider';
 
 @Module({
   imports: [ConfigModule],
   providers: [
     OllamaProvider,
+    GroqProvider,
     {
       provide: 'LLM_PROVIDER',
-      useClass: OllamaProvider,
+      useFactory: (configService: ConfigService) => {
+        const provider = configService.get<string>('LLM_PROVIDER', 'ollama');
+        if (provider === 'groq') {
+          return new GroqProvider(configService);
+        }
+        return new OllamaProvider(configService);
+      },
+      inject: [ConfigService],
     },
     LLMService,
   ],

@@ -10,4 +10,7 @@ export interface LLMConfig {
   apiKey?: string;
   temperature?: number;
   maxTokens?: number;
+  numThreads?: number;
+  numGpu?: number;
+  numCtx?: number;
 }
