@@ -27,8 +27,8 @@ export default function DocumentsPage() {
   const [processingOcr, setProcessingOcr] = useState<string | null>(null);
   const { user } = useAuthStore();
 
-  const isHRAdmin = user?.role?.name === 'HR Admin';
-  const isLegalAdmin = user?.role?.name === 'Legal Admin';
+  const isHRAdmin = user?.role?.name === 'Gestionnaire RH';
+  const isLegalAdmin = user?.role?.name === 'Responsable RH';
   const isITAdmin = user?.role?.name === 'IT Admin';
 
   useEffect(() => {
@@ -197,7 +197,7 @@ export default function DocumentsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-biat-primary">Gestion des Documents</h1>
-          {isHRAdmin && (
+          {(isHRAdmin || isLegalAdmin) && (
             <label className="bg-biat-primary text-white px-4 md:px-6 py-2 md:py-3 rounded-lg cursor-pointer hover:bg-biat-accent transition-all shadow-sm hover:shadow-md flex items-center justify-center space-x-2 text-sm md:text-base">
               <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />

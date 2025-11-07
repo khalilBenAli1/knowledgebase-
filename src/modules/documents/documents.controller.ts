@@ -82,7 +82,7 @@ export class DocumentsController {
   }
 
   @Post('upload')
-  @Roles(RoleName.HR_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
