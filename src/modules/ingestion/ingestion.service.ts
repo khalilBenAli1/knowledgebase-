@@ -34,9 +34,11 @@ export class IngestionService {
     }
 
     try {
+      // Pass OCR text if available so parser uses it instead of re-parsing
       const parsed = await this.parserService.parseFile(
         document.filePath,
         document.mimeType,
+        document.ocrText,
       );
 
       const chunkSize = parseInt(this.configService.get('CHUNK_SIZE', '800'));

@@ -4,6 +4,7 @@ import { Formation } from './formation.entity';
 
 export enum FormationRequestStatus {
   PENDING = 'pending',
+  MANAGER_APPROVED = 'manager_approved',
   APPROVED = 'approved',
   DECLINED = 'declined',
   CANCELLED = 'cancelled',
@@ -58,6 +59,20 @@ export class FormationRequest {
 
   @Column({ type: 'timestamp', nullable: true })
   reviewedAt: Date | null;
+
+  // HR review fields
+  @Column({ type: 'text', nullable: true })
+  hrResponse: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  hrReviewedBy: string | null;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'hrReviewedBy' })
+  hrReviewer: User;
+
+  @Column({ type: 'timestamp', nullable: true })
+  hrReviewedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;

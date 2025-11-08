@@ -148,9 +148,9 @@ export class ChatService {
       session = await this.createSession(userId);
     }
 
-    // Get conversation history for context (last 10 messages)
+    // Get conversation history for context (last 20 messages for better context)
     const conversationHistory = sessionId
-      ? (await this.getMessages(sessionId)).slice(-10)
+      ? (await this.getMessages(sessionId)).slice(-20)
       : [];
 
     const userMessage = this.messagesRepository.create({
@@ -190,20 +190,59 @@ export class ChatService {
     }
     // Check if asking about formations
     else if (this.isFormationQuery(question)) {
-      this.logger.log('Formation query detected');
+      this.logger.log('Formation query detected - searching both DB and documents');
 
+      // Search both the Formation DB AND the documents
       formations = await this.searchFormations(question);
+      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(question);
 
-      if (formations.length > 0) {
-        // Build a concise answer about formations
+      this.logger.log(`Found ${formations.length} formations in DB and ${retrievedSources.length} relevant document chunks`);
+
+      // If we have document context, use RAG to answer
+      if (retrievedSources.length > 0 && context.length > 0) {
+        sources = retrievedSources;
+
+        // Convert conversation history to LLM format
+        const historyForLLM = conversationHistory.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+        }));
+
+        // Use LLM to answer based on documents
+        answer = await this.llmService.generateAnswer(question, context, historyForLLM);
+
+        // If we also have formations in DB, append them with descriptions
+        if (formations.length > 0) {
+          const formationList = formations.map((f, idx) => {
+            const startDate = new Date(f.startDate).toLocaleDateString('fr-FR');
+            const desc = f.description ? f.description.substring(0, 150) : '';
+            return `${idx + 1}. **${f.title}** - ${startDate}\n   ${desc}${desc.length >= 150 ? '...' : ''}`;
+          }).join('\n\n');
+
+          answer += `\n\n**Formations disponibles dans le catalogue:**\n${formationList}`;
+
+          // Add formation sources
+          sources.push(...formations.map(f => ({
+            type: 'formation',
+            formationId: f.id,
+            title: f.title,
+            description: f.description.substring(0, 200),
+            startDate: f.startDate,
+            endDate: f.endDate,
+            imageUrl: f.imageUrl,
+          })));
+        }
+      }
+      // Only formations in DB, no documents
+      else if (formations.length > 0) {
         const formationList = formations.map((f, idx) => {
           const startDate = new Date(f.startDate).toLocaleDateString('fr-FR');
-          return `${idx + 1}. **${f.title}** - ${startDate}`;
-        }).join('\n');
+          const desc = f.description ? f.description.substring(0, 150) : '';
+          return `${idx + 1}. **${f.title}** - ${startDate}\n   ${desc}${desc.length >= 150 ? '...' : ''}`;
+        }).join('\n\n');
 
         answer = `Voici les formations disponibles:\n\n${formationList}\n\nBesoin de plus d'infos sur une formation spécifique ?`;
 
-        // Store formations in sourceRefs for frontend to display as cards
         sources = formations.map(f => ({
           type: 'formation',
           formationId: f.id,
@@ -213,14 +252,31 @@ export class ChatService {
           endDate: f.endDate,
           imageUrl: f.imageUrl,
         }));
-
-      } else {
-        answer = "Aucune formation trouvée pour le moment. Les nouvelles formations seront bientôt disponibles.";
+      }
+      // Nothing found
+      else {
+        answer = "Aucune formation trouvée dans le catalogue ni dans les documents.";
       }
     }
     // Regular RAG query
     else {
-      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(question);
+      // Build enhanced query using conversation history for better context
+      let enhancedQuery = question;
+      if (conversationHistory.length > 0) {
+        // Get last few user questions to understand context
+        const recentQuestions = conversationHistory
+          .filter(msg => msg.role === MessageRole.USER)
+          .slice(-3)
+          .map(msg => msg.content);
+
+        // If current question is very short (follow-up), append previous context
+        if (question.length < 20 && recentQuestions.length > 0) {
+          enhancedQuery = `${recentQuestions.join(' ')} ${question}`;
+          this.logger.debug(`Enhanced query with context: "${enhancedQuery}"`);
+        }
+      }
+
+      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(enhancedQuery);
       sources = retrievedSources;
 
       this.logger.log(`Retrieved ${sources.length} relevant chunks`);
@@ -229,8 +285,14 @@ export class ChatService {
         answer = "Je n'ai pas cette information dans mes documents.";
         this.logger.warn(`No context found for question: ${question}`);
       } else {
+        // Convert conversation history to LLM format
+        const historyForLLM = conversationHistory.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+        }));
+
         // Pass conversation history to LLM for better context awareness
-        answer = await this.llmService.generateAnswer(question, context);
+        answer = await this.llmService.generateAnswer(question, context, historyForLLM);
       }
     }
 

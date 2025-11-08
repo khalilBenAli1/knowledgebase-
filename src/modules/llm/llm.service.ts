@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { LLMProvider } from './interfaces/llm-provider.interface';
+import { LLMProvider, ConversationMessage } from './interfaces/llm-provider.interface';
 
 @Injectable()
 export class LLMService {
@@ -8,8 +8,8 @@ export class LLMService {
     private readonly llmProvider: LLMProvider,
   ) {}
 
-  async generateAnswer(prompt: string, context: string[]): Promise<string> {
-    return this.llmProvider.generateAnswer(prompt, context);
+  async generateAnswer(prompt: string, context: string[], conversationHistory?: ConversationMessage[]): Promise<string> {
+    return this.llmProvider.generateAnswer(prompt, context, conversationHistory);
   }
 
   async embed(text: string): Promise<number[]> {

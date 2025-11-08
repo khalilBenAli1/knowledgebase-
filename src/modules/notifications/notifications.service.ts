@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationType } from '../../entities/notification.entity';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class NotificationsService {
@@ -10,6 +11,8 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Notification)
     private notificationsRepository: Repository<Notification>,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
   ) {}
 
   async create(
@@ -163,5 +166,28 @@ export class NotificationsService {
       { likerName, actualityTitle, actualityId },
       `/actualites/${actualityId}`,
     );
+  }
+
+  async notifyHRFormationRequest(formationTitle: string, requesterName: string, requestId: string): Promise<void> {
+    // Find all HR users using query builder
+    const hrUsers = await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
+      .where('role.name = :roleName', { roleName: 'Responsable RH' })
+      .getMany();
+
+    // Create notification for each HR user
+    for (const hrUser of hrUsers) {
+      await this.create(
+        hrUser.id,
+        NotificationType.FORMATION_REQUEST,
+        'Nouvelle demande de formation (Validation RH)',
+        `${requesterName} a demandé la formation "${formationTitle}" (approuvée par le manager)`,
+        { requestId, requesterName, formationTitle },
+        `/hr/formations`, // Route to HR dashboard
+      );
+    }
+
+    this.logger.log(`Notified ${hrUsers.length} HR users about formation request ${requestId}`);
   }
 }

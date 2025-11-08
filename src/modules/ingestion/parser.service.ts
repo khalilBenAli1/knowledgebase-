@@ -15,10 +15,19 @@ export interface ParsedDocument {
 export class ParserService {
   private readonly logger = new Logger(ParserService.name);
 
-  async parseFile(filePath: string, mimeType: string): Promise<ParsedDocument> {
+  async parseFile(filePath: string, mimeType: string, ocrText?: string): Promise<ParsedDocument> {
     this.logger.log(`Parsing file: ${filePath} (${mimeType})`);
 
     try {
+      // Check if OCR text already exists and use it
+      if (ocrText && ocrText.length > 0) {
+        this.logger.log(`Using existing OCR text (${ocrText.length} characters)`);
+        return {
+          text: ocrText,
+          metadata: { source: 'ocr' },
+        };
+      }
+
       if (mimeType === 'application/pdf') {
         return await this.parsePDF(filePath);
       } else if (

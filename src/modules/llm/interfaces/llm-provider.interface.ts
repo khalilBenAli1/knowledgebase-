@@ -1,5 +1,10 @@
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface LLMProvider {
-  generateAnswer(prompt: string, context: string[]): Promise<string>;
+  generateAnswer(prompt: string, context: string[], conversationHistory?: ConversationMessage[]): Promise<string>;
   embed(text: string): Promise<number[]>;
 }
 

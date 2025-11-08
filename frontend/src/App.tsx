@@ -18,6 +18,8 @@ import SystemStatusPage from './pages/SystemStatusPage';
 import SettingsPage from './pages/SettingsPage';
 import ManagerDashboardPage from './pages/ManagerDashboardPage';
 import HRCatalogUploadPage from './pages/HRCatalogUploadPage';
+import HRFormationRequestsPage from './pages/HRFormationRequestsPage';
+import MyFormationRequestsPage from './pages/MyFormationRequestsPage';
 import FormationDetailPage from './pages/FormationDetailPage';
 import NotificationsPage from './pages/NotificationsPage';
 import TeamManagementPage from './pages/TeamManagementPage';
@@ -52,6 +54,7 @@ function App() {
                 <Route path="actualites/:id" element={<ActualityDetailPage />} />
                 <Route path="formations" element={<FormationsPage />} />
                 <Route path="formations/:id" element={<FormationDetailPage />} />
+                <Route path="my-formation-requests" element={<MyFormationRequestsPage />} />
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="documents" element={<DocumentsPage />} />
                 <Route path="admin" element={<AdminPage />} />
@@ -61,6 +64,7 @@ function App() {
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="manager" element={<ManagerDashboardPage />} />
                 <Route path="hr/catalog" element={<HRCatalogUploadPage />} />
+                <Route path="hr/formations" element={<HRFormationRequestsPage />} />
                 <Route path="hr/teams" element={<TeamManagementPage />} />
               </Route>
             </Routes>

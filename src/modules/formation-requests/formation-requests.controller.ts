@@ -48,4 +48,21 @@ export class FormationRequestsController {
   async cancelRequest(@Param('id') id: string, @Request() req) {
     return this.formationRequestsService.cancelRequest(id, req.user.id);
   }
+
+  // HR Endpoints
+  @Get('hr/pending')
+  async getHRPendingRequests(@Request() req) {
+    // TODO: Add RH role check guard
+    return this.formationRequestsService.getHRPendingRequests();
+  }
+
+  @Put(':id/hr-review')
+  async hrReviewRequest(
+    @Param('id') id: string,
+    @Request() req,
+    @Body() body: { status: FormationRequestStatus.APPROVED | FormationRequestStatus.DECLINED; hrResponse?: string },
+  ) {
+    // TODO: Add RH role check guard
+    return this.formationRequestsService.hrReviewRequest(id, req.user.id, body.status, body.hrResponse);
+  }
 }

@@ -158,7 +158,14 @@ export class FormationRequestsService {
       throw new BadRequestException('This request has already been reviewed');
     }
 
-    request.status = reviewDto.status;
+    // If manager approves, set to MANAGER_APPROVED (pending HR review)
+    // If manager declines, set to DECLINED (final)
+    if (reviewDto.status === FormationRequestStatus.APPROVED) {
+      request.status = FormationRequestStatus.MANAGER_APPROVED;
+    } else {
+      request.status = reviewDto.status;
+    }
+
     request.managerResponse = reviewDto.managerResponse ?? null;
     request.reviewedBy = managerId;
     request.reviewedAt = new Date();
@@ -171,19 +178,24 @@ export class FormationRequestsService {
       targetType: 'FormationRequest',
       targetId: requestId,
       payload: {
-        status: reviewDto.status,
+        status: request.status,
         requesterId: request.requesterId,
       },
     });
 
-    this.logger.log(`Manager ${managerId} ${reviewDto.status} formation request ${requestId}`);
+    this.logger.log(`Manager ${managerId} ${request.status} formation request ${requestId}`);
 
-    // Notify requester
+    // Notify based on status
     const formation = await this.formationsRepository.findOne({ where: { id: request.formationId } });
     if (formation) {
-      if (reviewDto.status === FormationRequestStatus.APPROVED) {
-        await this.notificationsService.notifyFormationApproved(request.requesterId, formation.title);
-      } else if (reviewDto.status === FormationRequestStatus.DECLINED) {
+      if (request.status === FormationRequestStatus.MANAGER_APPROVED) {
+        // Notify HR that there's a new request to review
+        await this.notificationsService.notifyHRFormationRequest(
+          formation.title,
+          request.requester?.name || 'Employee',
+          requestId,
+        );
+      } else if (request.status === FormationRequestStatus.DECLINED) {
         await this.notificationsService.notifyFormationDeclined(
           request.requesterId,
           formation.title,
@@ -222,9 +234,78 @@ export class FormationRequestsService {
     return {
       total: requests.length,
       pending: requests.filter(r => r.status === FormationRequestStatus.PENDING).length,
+      managerApproved: requests.filter(r => r.status === FormationRequestStatus.MANAGER_APPROVED).length,
       approved: requests.filter(r => r.status === FormationRequestStatus.APPROVED).length,
       declined: requests.filter(r => r.status === FormationRequestStatus.DECLINED).length,
       cancelled: requests.filter(r => r.status === FormationRequestStatus.CANCELLED).length,
     };
+  }
+
+  // HR Methods
+  async getHRPendingRequests(): Promise<FormationRequest[]> {
+    return this.requestsRepository.find({
+      where: { status: FormationRequestStatus.MANAGER_APPROVED },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async hrReviewRequest(
+    requestId: string,
+    hrUserId: string,
+    status: FormationRequestStatus.APPROVED | FormationRequestStatus.DECLINED,
+    hrResponse?: string,
+  ): Promise<FormationRequest> {
+    const request = await this.requestsRepository.findOne({
+      where: { id: requestId },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+
+    if (request.status !== FormationRequestStatus.MANAGER_APPROVED) {
+      throw new BadRequestException('This request is not pending HR review');
+    }
+
+    if (status === FormationRequestStatus.DECLINED && !hrResponse) {
+      throw new BadRequestException('Decline motive is required when declining a request');
+    }
+
+    request.status = status;
+    request.hrResponse = hrResponse ?? null;
+    request.hrReviewedBy = hrUserId;
+    request.hrReviewedAt = new Date();
+
+    const updated = await this.requestsRepository.save(request);
+
+    await this.auditService.log({
+      actorId: hrUserId,
+      action: AuditAction.DOCUMENT_APPROVE,
+      targetType: 'FormationRequest',
+      targetId: requestId,
+      payload: {
+        status,
+        requesterId: request.requesterId,
+        hrResponse,
+      },
+    });
+
+    this.logger.log(`HR ${hrUserId} ${status} formation request ${requestId}`);
+
+    // Notify requester of final decision
+    const formation = await this.formationsRepository.findOne({ where: { id: request.formationId } });
+    if (formation) {
+      if (status === FormationRequestStatus.APPROVED) {
+        await this.notificationsService.notifyFormationApproved(request.requesterId, formation.title);
+      } else if (status === FormationRequestStatus.DECLINED) {
+        await this.notificationsService.notifyFormationDeclined(
+          request.requesterId,
+          formation.title,
+          hrResponse,
+        );
+      }
+    }
+
+    return updated;
   }
 }

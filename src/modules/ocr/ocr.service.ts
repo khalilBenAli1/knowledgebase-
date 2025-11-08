@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as Tesseract from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
-import { createCanvas, Image } from 'canvas';
+const PDFImage = require('pdf-image').PDFImage;
 
 @Injectable()
 export class OcrService {
@@ -48,32 +48,62 @@ export class OcrService {
       }
 
       this.logger.log(`Starting enhanced OCR processing for document ${documentId}`);
+      this.logger.log(`File: ${filePath}, Type: ${document.mimeType}`);
 
       let ocrText: string;
 
-      if (document.mimeType.includes('pdf')) {
-        ocrText = await this.processPDF(filePath);
-      } else {
-        ocrText = await this.processImage(filePath);
+      try {
+        if (document.mimeType.includes('pdf')) {
+          ocrText = await this.processPDF(filePath);
+        } else {
+          ocrText = await this.processImage(filePath);
+        }
+
+        if (!ocrText || ocrText.trim().length === 0) {
+          ocrText = '[OCR completed but no text was extracted. The document may be blank or the image quality may be too poor.]';
+          this.logger.warn(`OCR returned empty text for document ${documentId}`);
+        }
+
+        document.ocrText = ocrText;
+        document.ocrProcessedAt = new Date();
+
+        await this.documentsRepository.save(document);
+
+        await this.auditService.log({
+          actorId,
+          action: AuditAction.DOCUMENT_PROCESSED,
+          targetType: 'Document',
+          targetId: documentId,
+          payload: {
+            ocrTextLength: ocrText.length,
+            method: 'tesseract-enhanced',
+            success: true,
+          },
+        });
+
+        this.logger.log(`OCR processing completed for document ${documentId}. Extracted ${ocrText.length} characters.`);
+
+      } catch (ocrError) {
+        // OCR failed, but save partial results if any
+        const errorMessage = `OCR processing failed: ${ocrError.message}`;
+        this.logger.error(errorMessage);
+
+        document.ocrText = `[${errorMessage}]`;
+        document.ocrProcessedAt = new Date();
+        await this.documentsRepository.save(document);
+
+        await this.auditService.log({
+          actorId,
+          action: AuditAction.DOCUMENT_PROCESSED,
+          targetType: 'Document',
+          targetId: documentId,
+          payload: {
+            error: ocrError.message,
+            method: 'tesseract-enhanced',
+            success: false,
+          },
+        });
       }
-
-      document.ocrText = ocrText;
-      document.ocrProcessedAt = new Date();
-
-      await this.documentsRepository.save(document);
-
-      await this.auditService.log({
-        actorId,
-        action: AuditAction.DOCUMENT_PROCESSED,
-        targetType: 'Document',
-        targetId: documentId,
-        payload: {
-          ocrTextLength: ocrText.length,
-          method: 'tesseract-enhanced',
-        },
-      });
-
-      this.logger.log(`OCR processing completed for document ${documentId}. Extracted ${ocrText.length} characters.`);
 
       return document;
     } catch (error) {
@@ -87,62 +117,142 @@ export class OcrService {
 
     const dataBuffer = fs.readFileSync(filePath);
     const uint8Array = new Uint8Array(dataBuffer);
-    const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
 
-    const totalPages = pdf.numPages;
-    this.logger.log(`PDF has ${totalPages} pages`);
+    // First, try to extract text layer (for PDFs with searchable text)
+    try {
+      const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
+      const totalPages = pdf.numPages;
+      this.logger.log(`PDF has ${totalPages} pages`);
 
-    const pageTexts: string[] = [];
+      const pageTexts: string[] = [];
 
-    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-      this.logger.log(`Processing page ${pageNum}/${totalPages}`);
-
-      const page = await pdf.getPage(pageNum);
-
-      // Try to extract text first (for PDFs with text layer)
-      const textContent = await page.getTextContent();
-      const textItems = textContent.items.map((item: any) => item.str).join(' ');
-
-      if (textItems.trim().length > 50) {
-        // PDF has text layer, use it
-        pageTexts.push(textItems);
-        this.logger.log(`Page ${pageNum}: Extracted ${textItems.length} chars from text layer`);
-      } else {
-        // PDF is scanned, use OCR
-        this.logger.log(`Page ${pageNum}: No text layer, using OCR`);
-
-        // Render page to image at high resolution
-        const viewport = page.getViewport({ scale: 3.0 }); // 3x scale for better quality
-        const canvas = createCanvas(viewport.width, viewport.height);
-        const context = canvas.getContext('2d');
-
-        await page.render({
-          canvasContext: context as any,
-          viewport: viewport,
-        }).promise;
-
-        // Convert canvas to buffer
-        const imageBuffer = canvas.toBuffer('image/png');
-
-        // Save to temporary file for Tesseract
-        const tempFilePath = path.join(process.cwd(), 'uploads', `temp-ocr-${Date.now()}-page-${pageNum}.png`);
-        fs.writeFileSync(tempFilePath, imageBuffer);
-
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
         try {
-          // Perform OCR using file path (Tesseract works better with file paths)
-          const text = await this.performOCRFromFile(tempFilePath);
-          pageTexts.push(text);
-          this.logger.log(`Page ${pageNum}: Extracted ${text.length} chars via OCR`);
-        } finally {
-          // Clean up temporary file
-          if (fs.existsSync(tempFilePath)) {
-            fs.unlinkSync(tempFilePath);
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          const textItems = textContent.items.map((item: any) => item.str).join(' ');
+
+          if (textItems.trim().length > 50) {
+            pageTexts.push(textItems);
+            this.logger.log(`Page ${pageNum}: Has text layer (${textItems.length} chars)`);
+          } else {
+            pageTexts.push('');
           }
+        } catch (pageError) {
+          this.logger.warn(`Failed to read page ${pageNum}: ${pageError.message}`);
+          pageTexts.push('');
         }
       }
-    }
 
-    return pageTexts.join('\n\n--- Page Break ---\n\n');
+      // If all pages have text, we're done
+      if (pageTexts.every(text => text.length > 50)) {
+        this.logger.log('All pages have text layer, no OCR needed');
+        return pageTexts.join('\n\n--- Page Break ---\n\n');
+      }
+
+      // Some pages are scanned - try to extract embedded images
+      this.logger.log('Attempting to extract embedded images from PDF...');
+
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        if (pageTexts[pageNum - 1].length > 50) {
+          continue; // Already has text
+        }
+
+        try {
+          this.logger.log(`Extracting images from page ${pageNum}...`);
+          const page = await pdf.getPage(pageNum);
+          const operators = await page.getOperatorList();
+
+          // Find image operations in the PDF
+          for (let i = 0; i < operators.fnArray.length; i++) {
+            if (operators.fnArray[i] === pdfjsLib.OPS.paintImageXObject ||
+                operators.fnArray[i] === pdfjsLib.OPS.paintXObject) {
+
+              const imageName = operators.argsArray[i][0];
+              this.logger.log(`Found image: ${imageName} on page ${pageNum}`);
+
+              try {
+                // Get the image from page resources
+                const image = await page.objs.get(imageName);
+
+                if (image && image.data) {
+                  this.logger.log(`Image data found: ${image.width}x${image.height}, ${image.data.length} bytes`);
+
+                  // Convert image data to PNG buffer using Sharp
+                  const sharp = require('sharp');
+                  let imageBuffer: Buffer;
+
+                  // Handle different image formats
+                  if (image.kind === 1) { // Grayscale
+                    imageBuffer = await sharp(Buffer.from(image.data), {
+                      raw: {
+                        width: image.width,
+                        height: image.height,
+                        channels: 1
+                      }
+                    }).png().toBuffer();
+                  } else if (image.kind === 2) { // RGB
+                    imageBuffer = await sharp(Buffer.from(image.data), {
+                      raw: {
+                        width: image.width,
+                        height: image.height,
+                        channels: 3
+                      }
+                    }).png().toBuffer();
+                  } else if (image.kind === 3) { // RGBA
+                    imageBuffer = await sharp(Buffer.from(image.data), {
+                      raw: {
+                        width: image.width,
+                        height: image.height,
+                        channels: 4
+                      }
+                    }).png().toBuffer();
+                  } else {
+                    this.logger.warn(`Unknown image format: kind=${image.kind}`);
+                    continue;
+                  }
+
+                  this.logger.log(`Converted to PNG buffer: ${imageBuffer.length} bytes`);
+
+                  // OCR the extracted image
+                  const text = await this.performOCR(imageBuffer, true);
+                  pageTexts[pageNum - 1] = text;
+                  this.logger.log(`Page ${pageNum}: OCR extracted ${text.length} chars from embedded image`);
+                  break; // Found and processed the main image for this page
+                }
+              } catch (imgError) {
+                this.logger.error(`Failed to extract image ${imageName}:`, imgError.message);
+              }
+            }
+          }
+        } catch (pageError) {
+          this.logger.error(`Failed to extract images from page ${pageNum}:`, pageError.message);
+        }
+      }
+
+      // Return whatever we got
+      const result = pageTexts.join('\n\n--- Page Break ---\n\n').trim();
+
+      if (result.length > 100) {
+        this.logger.log('Successfully extracted and OCR\'d text from PDF');
+        return result;
+      }
+
+      // Still couldn't process
+      throw new Error(
+        'Could not extract images from this PDF.\n\n' +
+        'SOLUTION: Please convert your PDF pages to images (PNG or JPG) and upload those instead.\n\n' +
+        'How to convert:\n' +
+        '1. Open PDF in any viewer\n' +
+        '2. Take screenshots of each page (Windows + Shift + S)\n' +
+        '3. Save as PNG files\n' +
+        '4. Upload the PNG files'
+      );
+
+    } catch (pdfError) {
+      this.logger.error('PDF processing failed:', pdfError.message);
+      throw new Error(`PDF processing failed: ${pdfError.message}`);
+    }
   }
 
   private async processImage(filePath: string): Promise<string> {
@@ -230,40 +340,23 @@ export class OcrService {
       // Use preprocessed image for better results (unless skipped for PDFs)
       const finalBuffer = skipPreprocessing ? imageBuffer : await this.preprocessImage(imageBuffer);
 
-      const { data } = await Tesseract.recognize(
-        finalBuffer,
-        'fra+eng', // ← FRENCH + ENGLISH
-        {
-          logger: (m: any) => {
-            if (m.status === 'recognizing text') {
-              const progress = Math.round(m.progress * 100);
-              if (progress % 20 === 0) { // Log every 20%
-                this.logger.debug(`OCR progress: ${progress}%`);
-              }
+      // Create worker (v6 API)
+      const worker = await Tesseract.createWorker(['fra', 'eng'], 1, {
+        logger: (m: any) => {
+          if (m.status === 'recognizing text') {
+            const progress = Math.round(m.progress * 100);
+            if (progress % 20 === 0) {
+              this.logger.debug(`OCR progress: ${progress}%`);
             }
-          },
+          }
+        },
+      });
 
-          // Tesseract configuration for better accuracy
-          tessedit_pageseg_mode: Tesseract.PSM.AUTO, // Auto page segmentation
-          tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY, // Use LSTM (best accuracy)
-          preserve_interword_spaces: '1', // Keep spaces between words
+      const result = await worker.recognize(finalBuffer);
+      await worker.terminate();
 
-          // Quality settings
-          tessedit_do_invert: '1', // Auto-invert if needed
-          textord_heavy_nr: '1', // Noise reduction
-
-          // Language-specific
-          load_system_dawg: '1',
-          load_freq_dawg: '1',
-
-          // Output settings
-          tessedit_create_hocr: '0',
-          tessedit_create_pdf: '0',
-        } as any
-      );
-
-      const text = data.text.trim();
-      const confidence = data.confidence;
+      const text = result.data.text.trim();
+      const confidence = result.data.confidence;
 
       this.logger.log(`OCR completed. Confidence: ${confidence.toFixed(2)}%, Length: ${text.length} chars`);
 
@@ -283,36 +376,37 @@ export class OcrService {
     this.logger.log(`Starting Tesseract OCR from file: ${filePath}`);
 
     try {
-      const { data } = await Tesseract.recognize(
-        filePath, // Use file path directly - Tesseract handles this better
-        'fra+eng', // French + English
-        {
-          logger: (m: any) => {
-            if (m.status === 'recognizing text') {
-              const progress = Math.round(m.progress * 100);
-              if (progress % 20 === 0) {
-                this.logger.debug(`OCR progress: ${progress}%`);
-              }
-            }
-          },
+      // Verify file exists and has content
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`File does not exist: ${filePath}`);
+      }
 
-          // Tesseract configuration for better accuracy
-          tessedit_pageseg_mode: Tesseract.PSM.AUTO,
-          tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
-          preserve_interword_spaces: '1',
-          tessedit_do_invert: '1',
-          textord_heavy_nr: '1',
-          load_system_dawg: '1',
-          load_freq_dawg: '1',
-          tessedit_create_hocr: '0',
-          tessedit_create_pdf: '0',
-        } as any
-      );
+      const stats = fs.statSync(filePath);
+      this.logger.log(`File size: ${stats.size} bytes`);
 
-      const text = data.text.trim();
-      const confidence = data.confidence;
+      if (stats.size === 0) {
+        throw new Error(`File is empty: ${filePath}`);
+      }
+
+      // Create Tesseract worker (v6 API)
+      this.logger.log('Creating Tesseract worker...');
+      const worker = await Tesseract.createWorker(['fra', 'eng'], 1, {
+        logger: (m: any) => {
+          this.logger.log(`Tesseract: ${m.status} ${m.progress ? Math.round(m.progress * 100) + '%' : ''}`);
+        },
+      });
+
+      this.logger.log('Worker created, starting recognition...');
+
+      // Recognize text
+      const result = await worker.recognize(filePath);
+      const text = result.data.text.trim();
+      const confidence = result.data.confidence;
 
       this.logger.log(`OCR completed. Confidence: ${confidence.toFixed(2)}%, Length: ${text.length} chars`);
+
+      // Clean up
+      await worker.terminate();
 
       if (text.length < 10) {
         this.logger.warn('OCR returned very short text. Possible issues with image quality or language.');
@@ -321,8 +415,23 @@ export class OcrService {
       return text;
 
     } catch (error) {
-      this.logger.error('Tesseract OCR failed', error);
-      throw new Error(`OCR failed: ${error.message}`);
+      this.logger.error(`Tesseract OCR error:`, error);
+      this.logger.error(`Error message: ${error.message || 'No error message'}`);
+      this.logger.error(`Error type: ${error.constructor?.name || 'Unknown'}`);
+      this.logger.error(`Error stack: ${error.stack || 'No stack trace'}`);
+      this.logger.error(`Full error object:`, JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
+      // Try simple recognition as last resort
+      try {
+        this.logger.log('Trying simple Tesseract.recognize as fallback...');
+        const result = await Tesseract.recognize(filePath, 'fra+eng');
+        const text = result.data.text.trim();
+        this.logger.log(`Fallback OCR succeeded. Length: ${text.length} chars`);
+        return text;
+      } catch (fallbackError) {
+        this.logger.error('Fallback OCR also failed:', fallbackError.message);
+        throw new Error(`OCR failed: ${error.message}. Fallback: ${fallbackError.message}`);
+      }
     }
   }
 

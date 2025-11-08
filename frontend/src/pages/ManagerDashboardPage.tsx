@@ -162,10 +162,12 @@ export default function ManagerDashboardPage() {
   const getStatusBadge = (status: string) => {
     const styles = {
       PENDING: 'bg-yellow-100 text-yellow-800',
+      MANAGER_APPROVED: 'bg-blue-100 text-blue-800',
       APPROVED: 'bg-green-100 text-green-800',
       DECLINED: 'bg-red-100 text-red-800',
       CANCELLED: 'bg-gray-100 text-gray-800',
       pending: 'bg-yellow-100 text-yellow-800',
+      manager_approved: 'bg-blue-100 text-blue-800',
       accepted: 'bg-green-100 text-green-800',
       declined: 'bg-red-100 text-red-800',
       cancelled: 'bg-gray-100 text-gray-800',
@@ -173,10 +175,12 @@ export default function ManagerDashboardPage() {
 
     const labels = {
       PENDING: 'En attente',
-      APPROVED: 'Approuvée',
+      MANAGER_APPROVED: 'Envoyée à RH',
+      APPROVED: 'Approuvée (RH)',
       DECLINED: 'Refusée',
       CANCELLED: 'Annulée',
       pending: 'En attente',
+      manager_approved: 'Envoyée à RH',
       accepted: 'Acceptée',
       declined: 'Refusée',
       cancelled: 'Annulée',
@@ -309,7 +313,7 @@ export default function ManagerDashboardPage() {
                                 disabled={submitting}
                                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 font-medium"
                               >
-                                ✓ Approuver
+                                ✓ Approuver et envoyer à RH
                               </button>
                               <button
                                 onClick={() => handleReviewRequest(request.id, 'DECLINED')}

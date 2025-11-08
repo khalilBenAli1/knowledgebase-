@@ -59,17 +59,53 @@ export class RagService {
     return denominator === 0 ? 0 : dotProduct / denominator;
   }
 
+  /**
+   * Preprocess and normalize query for better matching
+   */
+  private preprocessQuery(query: string): string {
+    // Remove extra whitespace
+    let processed = query.trim().replace(/\s+/g, ' ');
+
+    // Convert to lowercase for consistency
+    processed = processed.toLowerCase();
+
+    // Expand common abbreviations (French)
+    const abbreviations: Record<string, string> = {
+      'rh': 'ressources humaines',
+      'hr': 'human resources',
+      'info': 'information',
+      'doc': 'document',
+      'docs': 'documents',
+    };
+
+    Object.entries(abbreviations).forEach(([abbr, full]) => {
+      const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
+      processed = processed.replace(regex, full);
+    });
+
+    this.logger.debug(`Preprocessed query: "${query}" -> "${processed}"`);
+    return processed;
+  }
+
   async searchSimilarChunks(
     query: string,
     topK: number = 5,
   ): Promise<SearchResult[]> {
-    this.logger.log(`Searching for: ${query}`);
+    this.logger.log(`Searching for: "${query}"`);
 
-    const queryEmbedding = await this.llmService.embed(query);
+    // Preprocess query
+    const processedQuery = this.preprocessQuery(query);
 
+    // Generate embedding
+    this.logger.debug('Generating query embedding...');
+    const queryEmbedding = await this.llmService.embed(processedQuery);
+    this.logger.debug(`Query embedding generated: ${queryEmbedding.length} dimensions`);
+
+    // Updated default threshold to 0.5 (better balance)
     const threshold = parseFloat(
-      this.configService.get('SIMILARITY_THRESHOLD', '0.3'),
+      this.configService.get('SIMILARITY_THRESHOLD', '0.5'),
     );
+    this.logger.log(`Using similarity threshold: ${threshold}`);
 
     // Get results from pgvector
     const results = await this.chunksRepository
@@ -89,14 +125,23 @@ export class RagService {
       return [];
     }
 
-    // Calculate actual similarity scores
-    const resultsWithSimilarity = results.map((chunk) => {
+    // Calculate actual similarity scores with detailed logging
+    const resultsWithSimilarity = results.map((chunk, index) => {
       try {
         const chunkEmbedding = Array.isArray(chunk.embedding)
           ? chunk.embedding
           : JSON.parse(chunk.embedding as any);
 
         const similarity = this.cosineSimilarity(queryEmbedding, chunkEmbedding);
+
+        // Log details for top results
+        if (index < 10) {
+          this.logger.debug(
+            `Chunk ${index + 1}: similarity=${similarity.toFixed(4)}, ` +
+            `doc="${chunk.document?.name || 'unknown'}", ` +
+            `text="${chunk.chunkText.substring(0, 80)}..."`
+          );
+        }
 
         return {
           chunk,
@@ -113,22 +158,68 @@ export class RagService {
       }
     });
 
-    // Filter by threshold and limit to topK
-    const filtered = resultsWithSimilarity
-      .filter((result) => result.similarity >= threshold)
+    // Apply metadata boosting before sorting
+    const boostedResults = resultsWithSimilarity.map(result => {
+      let boostedScore = result.similarity;
+
+      // Boost recent documents (within last 30 days)
+      if (result.document?.createdAt) {
+        const daysSinceCreation = (Date.now() - new Date(result.document.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceCreation < 30) {
+          boostedScore *= 1.1; // 10% boost for recent docs
+          this.logger.debug(`Boosted recent doc: ${result.document.name} (+10%)`);
+        }
+      }
+
+      // Boost documents with certain keywords in name
+      const docName = result.document?.name?.toLowerCase() || '';
+      if (docName.includes('formation') || docName.includes('training')) {
+        boostedScore *= 1.05; // 5% boost for formation docs
+        this.logger.debug(`Boosted formation doc: ${result.document.name} (+5%)`);
+      }
+      if (docName.includes('règlement') || docName.includes('regulation') || docName.includes('policy')) {
+        boostedScore *= 1.05; // 5% boost for regulation docs
+        this.logger.debug(`Boosted regulation doc: ${result.document.name} (+5%)`);
+      }
+
+      return {
+        ...result,
+        similarity: boostedScore,
+        originalSimilarity: result.similarity,
+      };
+    });
+
+    // Sort by boosted similarity (descending)
+    boostedResults.sort((a, b) => b.similarity - a.similarity);
+
+    // Log all similarity scores for debugging
+    const allScores = boostedResults.map(r =>
+      `${r.similarity.toFixed(3)}${r.similarity !== r.originalSimilarity ? '*' : ''}`
+    ).join(', ');
+    this.logger.debug(`All similarity scores (boosted marked with *): [${allScores}]`);
+
+    // Filter by threshold (using original similarity, not boosted)
+    const filtered = boostedResults
+      .filter((result) => (result.originalSimilarity || result.similarity) >= threshold)
       .slice(0, topK);
 
-    this.logger.log(`Found ${filtered.length} chunks above similarity threshold ${threshold} (from ${results.length} total)`);
+    this.logger.log(
+      `Found ${filtered.length} chunks above threshold ${threshold} ` +
+      `(from ${results.length} total, max=${boostedResults[0]?.similarity.toFixed(3) || 'N/A'})`
+    );
 
     if (filtered.length > 0) {
-      this.logger.log(`Similarity scores: ${filtered.map(r => r.similarity.toFixed(3)).join(', ')}`);
+      this.logger.log(`✓ Returning ${filtered.length} chunks with scores: ${filtered.map(r => r.similarity.toFixed(3)).join(', ')}`);
+      return filtered;
     } else {
-      this.logger.warn(`No chunks met the similarity threshold of ${threshold}. Returning top ${Math.min(topK, results.length)} results anyway.`);
+      this.logger.warn(
+        `✗ No chunks met threshold ${threshold}. ` +
+        `Best score was ${boostedResults[0]?.originalSimilarity?.toFixed(3) || boostedResults[0]?.similarity.toFixed(3)}. ` +
+        `Returning top ${Math.min(topK, results.length)} results anyway.`
+      );
       // If nothing passes threshold, return top results anyway
-      return resultsWithSimilarity.slice(0, topK);
+      return boostedResults.slice(0, topK);
     }
-
-    return filtered;
   }
 
   async retrieveContext(query: string): Promise<RetrievalResult> {

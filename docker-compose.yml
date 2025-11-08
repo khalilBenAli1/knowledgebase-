@@ -19,6 +19,26 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build: .
+    container_name: assurances_biat_backend
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_NAME: assurances_biat
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/usr/src/app/uploads
+      - ./.env:/usr/src/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: npm run start:prod
+
 volumes:
   postgres_data:
     driver: local
