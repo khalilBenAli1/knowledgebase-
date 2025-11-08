@@ -55,7 +55,7 @@ export class AdminController {
 
   // Audit Logs with Pagination (Legal Admin ONLY)
   @Get('audit')
-  @Roles(RoleName.LEGAL_ADMIN)
+  @Roles(RoleName.HR_ADMIN)
   getAuditLogs(
     @Query('page') page: string = '1',
     @Query('pageSize') pageSize: string = '20',

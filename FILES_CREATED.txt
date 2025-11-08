@@ -1,0 +1,16 @@
+# Implementation Complete
+
+## Backend Files
+src/entities/formation-request.entity.ts
+src/entities/role.entity.updated.ts
+src/entities/user.entity.updated.ts
+
+## Modules
+src/modules/formation-requests/dto/create-formation-request.dto.ts
+src/modules/formation-requests/dto/review-formation-request.dto.ts
+src/modules/formation-requests/formation-requests.controller.ts
+src/modules/formation-requests/formation-requests.module.ts
+src/modules/formation-requests/formation-requests.service.ts
+
+src/modules/email/email.module.ts
+src/modules/email/email.service.ts

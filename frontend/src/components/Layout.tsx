@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import NotificationBell from './NotificationBell';
 
 export default function Layout() {
   const { user, logout } = useAuthStore();
@@ -8,13 +9,13 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  const canAccessDocuments = ['Gestionnaire RH', 'Responsable RH'].includes(
-    user?.role?.name || '',
-  );
-  const canAccessAdmin = ['Gestionnaire RH', 'IT Admin'].includes(user?.role?.name || '');
-  const canAccessAudit = ['Responsable RH'].includes(user?.role?.name || '');
-  const canAccessUsers = ['IT Admin'].includes(user?.role?.name || '');
-  const canAccessAccueil = ['Gestionnaire RH', 'Responsable RH'].includes(user?.role?.name || '');
+  const canAccessDocuments = user?.role?.name === 'Responsable RH';
+  const canAccessAdmin = ['Responsable RH', 'IT Admin'].includes(user?.role?.name || '');
+  const canAccessAudit = user?.role?.name === 'Responsable RH';
+  const canAccessUsers = user?.role?.name === 'IT Admin';
+  const canAccessManager = user?.role?.name === "Manager";
+  const canAccessHRCatalog = user?.role?.name === 'Responsable RH';
+  const canAccessHRTeams = user?.role?.name === 'Responsable RH';
   const isITAdmin = user?.role?.name === 'IT Admin';
 
   const isActive = (path: string) => location.pathname === path;
@@ -48,12 +49,27 @@ export default function Layout() {
             <Link to="/actualites" className={`px-4 py-2 rounded-lg transition-all ${isActive('/actualites') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
               Actualités
             </Link>
+                        {canAccessManager && (
+              <Link to="/manager" className={`px-4 py-2 rounded-lg transition-all ${isActive('/manager') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Mes Équipes
+              </Link>
+            )}
             <Link to="/formations" className={`px-4 py-2 rounded-lg transition-all ${isActive('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
               Formations
             </Link>
             {canAccessDocuments && (
               <Link to="/documents" className={`px-4 py-2 rounded-lg transition-all ${isActive('/documents') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
                 Documents
+              </Link>
+            )}
+            {canAccessHRCatalog && (
+              <Link to="/hr/catalog" className={`px-4 py-2 rounded-lg transition-all ${isActive('/hr/catalog') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Catalogue RH
+              </Link>
+            )}
+            {canAccessHRTeams && (
+              <Link to="/hr/teams" className={`px-4 py-2 rounded-lg transition-all ${isActive('/hr/teams') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Gestion Équipes
               </Link>
             )}
             {canAccessAdmin && (
@@ -78,8 +94,11 @@ export default function Layout() {
             )}
           </nav>
 
+          {/* Notification Bell */}
+          <NotificationBell />
+
           {/* Desktop User Menu - Dropdown */}
-          <div className="hidden md:flex items-center relative">
+          <div className="hidden md:flex items-center relative ml-2">
             <button
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               className="flex items-center gap-3 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all border border-white/20 hover:border-white/30"
@@ -154,12 +173,27 @@ export default function Layout() {
               <Link to="/actualites" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/actualites') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
                 Actualités
               </Link>
+              {canAccessManager && (
+                <Link to="/manager" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/manager') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                  Mes Équipes
+                </Link>
+              )}
               <Link to="/formations" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
                 Formations
               </Link>
               {canAccessDocuments && (
                 <Link to="/documents" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/documents') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
                   Documents
+                </Link>
+              )}
+              {canAccessHRCatalog && (
+                <Link to="/hr/catalog" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/hr/catalog') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                  Catalogue RH
+                </Link>
+              )}
+              {canAccessHRTeams && (
+                <Link to="/hr/teams" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/hr/teams') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                  Gestion Équipes
                 </Link>
               )}
               {canAccessAdmin && (

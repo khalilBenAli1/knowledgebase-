@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import PDFViewer from '../components/PDFViewer';
+import toast from 'react-hot-toast';
 
 interface Document {
   id: string;
@@ -12,6 +13,8 @@ interface Document {
   createdAt: string;
   uploader?: { name: string };
   filePath?: string;
+  ocrText?: string | null;
+  ocrProcessedAt?: string | null;
 }
 
 export default function DocumentsPage() {
@@ -24,11 +27,15 @@ export default function DocumentsPage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showPDFViewer, setShowPDFViewer] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string>('');
-  const [processingOcr, setProcessingOcr] = useState<string | null>(null);
+  const [publishingDoc, setPublishingDoc] = useState<string | null>(null);
+  const [publishProgress, setPublishProgress] = useState({
+    ocr: false,
+    parsing: false,
+    publishing: false,
+  });
   const { user } = useAuthStore();
 
-  const isHRAdmin = user?.role?.name === 'Gestionnaire RH';
-  const isLegalAdmin = user?.role?.name === 'Responsable RH';
+  const isHR = user?.role?.name === 'Responsable RH';
   const isITAdmin = user?.role?.name === 'IT Admin';
 
   useEffect(() => {
@@ -58,11 +65,11 @@ export default function DocumentsPage() {
       await api.post('/documents/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      alert('Document uploadé avec succès!');
+      toast.success('Document uploadé avec succès!');
       loadDocuments();
     } catch (error) {
       console.error('Failed to upload document', error);
-      alert('Erreur lors de l\'upload du document');
+      toast.error('Erreur lors de l\'upload du document');
     } finally {
       setUploading(false);
     }
@@ -71,30 +78,65 @@ export default function DocumentsPage() {
   const handleApprove = async (id: string) => {
     try {
       await api.post(`/documents/${id}/approve`);
-      alert('Document approuvé!');
+      toast.success('Document approuvé!');
       loadDocuments();
     } catch (error) {
       console.error('Failed to approve document', error);
+      toast.error('Erreur lors de l\'approbation');
     }
   };
 
   const handlePublish = async (id: string) => {
     try {
+      setPublishingDoc(id);
+      setPublishProgress({ ocr: false, parsing: false, publishing: false });
+
+      // Simulate progress steps (since backend does everything in one call)
+      setTimeout(() => setPublishProgress({ ocr: true, parsing: false, publishing: false }), 500);
+      setTimeout(() => setPublishProgress({ ocr: true, parsing: true, publishing: false }), 1500);
+
       await api.post(`/documents/${id}/publish`);
-      alert('Document publié!');
+
+      setPublishProgress({ ocr: true, parsing: true, publishing: true });
+
+      // Show success briefly before closing
+      setTimeout(() => {
+        setPublishingDoc(null);
+        setPublishProgress({ ocr: false, parsing: false, publishing: false });
+        toast.success('Document publié avec succès!');
+        loadDocuments();
+      }, 1000);
+    } catch (error: any) {
+      console.error('Failed to publish document', error);
+      setPublishingDoc(null);
+      setPublishProgress({ ocr: false, parsing: false, publishing: false });
+      toast.error(error.response?.data?.message || 'Erreur lors de la publication du document');
+    }
+  };
+
+  const handleDelete = async (id: string, docName: string) => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer le document "${docName}" ? Cette action est irréversible.`)) {
+      return;
+    }
+
+    try {
+      await api.delete(`/documents/${id}`);
+      toast.success('Document supprimé!');
       loadDocuments();
     } catch (error) {
-      console.error('Failed to publish document', error);
+      console.error('Failed to delete document', error);
+      toast.error('Erreur lors de la suppression du document');
     }
   };
 
   const handleProcess = async (id: string) => {
     try {
       await api.post(`/ingestion/process/${id}`);
-      alert('Traitement du document commencé');
+      toast.success('Traitement du document commencé');
       loadDocuments();
     } catch (error) {
       console.error('Failed to process document', error);
+      toast.error('Erreur lors du traitement');
     }
   };
 
@@ -117,7 +159,7 @@ export default function DocumentsPage() {
       link.remove();
     } catch (error) {
       console.error('Failed to download document', error);
-      alert('Erreur lors du téléchargement');
+      toast.error('Erreur lors du téléchargement');
     }
   };
 
@@ -125,7 +167,7 @@ export default function DocumentsPage() {
     try {
       // Check if document is PDF
       if (!doc.originalFilename.toLowerCase().endsWith('.pdf')) {
-        alert('Seuls les fichiers PDF peuvent être prévisualisés');
+        toast.error('Seuls les fichiers PDF peuvent être prévisualisés');
         return;
       }
 
@@ -138,7 +180,7 @@ export default function DocumentsPage() {
       setShowPreviewModal(false);
     } catch (error) {
       console.error('Failed to load PDF', error);
-      alert('Erreur lors du chargement du PDF');
+      toast.error('Erreur lors du chargement du PDF');
     }
   };
 
@@ -147,20 +189,6 @@ export default function DocumentsPage() {
     if (pdfUrl) {
       window.URL.revokeObjectURL(pdfUrl);
       setPdfUrl('');
-    }
-  };
-
-  const handleOCR = async (docId: string) => {
-    try {
-      setProcessingOcr(docId);
-      const response = await api.post(`/ocr/process/${docId}`);
-      alert(`OCR terminé! ${response.data.extractedTextLength} caractères extraits.`);
-      loadDocuments(); // Refresh to show OCR status
-    } catch (error: any) {
-      console.error('OCR failed:', error);
-      alert(error.response?.data?.message || 'Erreur lors de l\'extraction OCR');
-    } finally {
-      setProcessingOcr(null);
     }
   };
 
@@ -197,7 +225,7 @@ export default function DocumentsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-biat-primary">Gestion des Documents</h1>
-          {(isHRAdmin || isLegalAdmin) && (
+          {isHR && (
             <label className="bg-biat-primary text-white px-4 md:px-6 py-2 md:py-3 rounded-lg cursor-pointer hover:bg-biat-accent transition-all shadow-sm hover:shadow-md flex items-center justify-center space-x-2 text-sm md:text-base">
               <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -278,6 +306,9 @@ export default function DocumentsPage() {
                   Statut
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                  OCR
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
                   Version
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
@@ -291,7 +322,7 @@ export default function DocumentsPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
                     Aucun document trouvé
                   </td>
                 </tr>
@@ -308,6 +339,23 @@ export default function DocumentsPage() {
                       >
                         {doc.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {doc.ocrText ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Oui
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Non
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {doc.version}
@@ -335,46 +383,24 @@ export default function DocumentsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                       </button>
-                      {(isHRAdmin || isLegalAdmin || isITAdmin) && (
-                        <button
-                          onClick={() => handleOCR(doc.id)}
-                          disabled={processingOcr === doc.id}
-                          className="text-purple-600 hover:text-purple-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Extraire le texte (OCR)"
-                        >
-                          {processingOcr === doc.id ? (
-                            <svg className="w-5 h-5 inline animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                          ) : (
-                            <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                          )}
-                        </button>
-                      )}
-                      {doc.status === 'uploaded' && (isHRAdmin || isITAdmin) && (
-                        <button
-                          onClick={() => handleProcess(doc.id)}
-                          className="text-biat-primary hover:text-biat-accent font-medium transition-colors"
-                        >
-                          Traiter
-                        </button>
-                      )}
-                      {doc.status === 'parsed' && isLegalAdmin && (
-                        <button
-                          onClick={() => handleApprove(doc.id)}
-                          className="text-green-600 hover:text-green-800 font-medium transition-colors"
-                        >
-                          Approuver
-                        </button>
-                      )}
-                      {doc.status === 'approved' && isHRAdmin && (
+                      {(doc.status === 'uploaded' || doc.status === 'parsed' || doc.status === 'approved') && isHR && (
                         <button
                           onClick={() => handlePublish(doc.id)}
-                          className="text-biat-primary hover:text-biat-accent font-medium transition-colors"
+                          disabled={publishingDoc === doc.id}
+                          className="text-green-600 hover:text-green-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Publier
+                          {publishingDoc === doc.id ? 'En cours...' : 'Publier'}
+                        </button>
+                      )}
+                      {isHR && (
+                        <button
+                          onClick={() => handleDelete(doc.id, doc.name)}
+                          className="text-red-600 hover:text-red-800 font-medium transition-colors"
+                          title="Supprimer"
+                        >
+                          <svg className="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                         </button>
                       )}
                     </td>
@@ -438,54 +464,33 @@ export default function DocumentsPage() {
                     </svg>
                     Télécharger
                   </button>
-                  {(isHRAdmin || isLegalAdmin || isITAdmin) && (
-                    <button
-                      onClick={() => handleOCR(doc.id)}
-                      disabled={processingOcr === doc.id}
-                      className="flex-1 min-w-[100px] bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {processingOcr === doc.id ? (
-                        <>
-                          <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          OCR...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          OCR
-                        </>
-                      )}
-                    </button>
-                  )}
                 </div>
 
                 {/* Admin Actions */}
-                {doc.status === 'uploaded' && (isHRAdmin || isITAdmin) && (
-                  <button
-                    onClick={() => handleProcess(doc.id)}
-                    className="w-full mt-2 bg-biat-primary text-white px-3 py-2 rounded-lg hover:bg-biat-accent transition-all text-sm"
-                  >
-                    Traiter le document
-                  </button>
-                )}
-                {doc.status === 'parsed' && isLegalAdmin && (
-                  <button
-                    onClick={() => handleApprove(doc.id)}
-                    className="w-full mt-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-all text-sm"
-                  >
-                    Approuver
-                  </button>
-                )}
-                {doc.status === 'approved' && isHRAdmin && (
+                {(doc.status === 'uploaded' || doc.status === 'parsed' || doc.status === 'approved') && isHR && (
                   <button
                     onClick={() => handlePublish(doc.id)}
-                    className="w-full mt-2 bg-biat-primary text-white px-3 py-2 rounded-lg hover:bg-biat-accent transition-all text-sm"
+                    disabled={publishingDoc === doc.id}
+                    className="w-full mt-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    Publier
+                    {publishingDoc === doc.id && (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {publishingDoc === doc.id ? 'Publication en cours...' : 'Publier'}
+                  </button>
+                )}
+                {isHR && (
+                  <button
+                    onClick={() => handleDelete(doc.id, doc.name)}
+                    className="w-full mt-2 bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Supprimer
                   </button>
                 )}
               </div>
@@ -584,6 +589,100 @@ export default function DocumentsPage() {
       {/* PDF Viewer */}
       {showPDFViewer && pdfUrl && (
         <PDFViewer fileUrl={pdfUrl} onClose={closePDFViewer} />
+      )}
+
+      {/* Publishing Progress Modal */}
+      {publishingDoc && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-biat-primary mb-6 text-center">
+              Publication en cours...
+            </h3>
+
+            <div className="space-y-4">
+              {/* OCR Step */}
+              <div className="flex items-center gap-4">
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                  publishProgress.ocr ? 'bg-green-500' : 'bg-biat-primary'
+                }`}>
+                  {publishProgress.ocr ? (
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-800">Extraction du texte (OCR)</div>
+                  <div className="text-sm text-gray-500">Lecture du document...</div>
+                </div>
+              </div>
+
+              {/* Parsing Step */}
+              <div className="flex items-center gap-4">
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                  publishProgress.parsing ? 'bg-green-500' : publishProgress.ocr ? 'bg-biat-primary' : 'bg-gray-300'
+                }`}>
+                  {publishProgress.parsing ? (
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : publishProgress.ocr ? (
+                    <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-800">Traitement du document</div>
+                  <div className="text-sm text-gray-500">Analyse et indexation...</div>
+                </div>
+              </div>
+
+              {/* Publishing Step */}
+              <div className="flex items-center gap-4">
+                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                  publishProgress.publishing ? 'bg-green-500' : publishProgress.parsing ? 'bg-biat-primary' : 'bg-gray-300'
+                }`}>
+                  {publishProgress.publishing ? (
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : publishProgress.parsing ? (
+                    <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-800">Publication</div>
+                  <div className="text-sm text-gray-500">Mise en ligne du document...</div>
+                </div>
+              </div>
+            </div>
+
+            {publishProgress.publishing && (
+              <div className="mt-6 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="font-semibold">Document publié avec succès!</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

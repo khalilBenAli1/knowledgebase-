@@ -87,4 +87,14 @@ export class UsersService {
     const user = await this.findById(id);
     await this.usersRepository.remove(user);
   }
+
+  async findOne(id: string): Promise<User> {
+    return this.findById(id);
+  }
+
+  async updateManager(userId: string, managerId: string | null): Promise<User> {
+    const user = await this.findById(userId);
+    user.managerId = managerId;
+    return this.usersRepository.save(user);
+  }
 }

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -17,6 +17,7 @@ export class IngestionService {
     private documentsRepository: Repository<Document>,
     @InjectRepository(DocumentChunk)
     private chunksRepository: Repository<DocumentChunk>,
+    @Inject(forwardRef(() => DocumentsService))
     private documentsService: DocumentsService,
     private parserService: ParserService,
     private llmService: LLMService,

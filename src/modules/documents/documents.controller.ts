@@ -32,7 +32,7 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Get()
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN, RoleName.IT_ADMIN, RoleName.USER)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN, RoleName.IT_ADMIN, RoleName.USER)
   findAll(
     @Query('status') status?: DocumentStatus,
     @Query('category') category?: string,
@@ -56,19 +56,19 @@ export class DocumentsController {
   }
 
   @Get(':id')
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN, RoleName.IT_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN, RoleName.IT_ADMIN)
   findOne(@Param('id') id: string) {
     return this.documentsService.findById(id);
   }
 
   @Get(':id/chunks')
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN, RoleName.IT_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN, RoleName.IT_ADMIN)
   getChunks(@Param('id') id: string) {
     return this.documentsService.getChunks(id);
   }
 
   @Get(':id/download')
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN, RoleName.IT_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN, RoleName.IT_ADMIN)
   async downloadDocument(@Param('id') id: string, @Res({ passthrough: true }) res: Response) {
     const document = await this.documentsService.findById(id);
 
@@ -82,7 +82,7 @@ export class DocumentsController {
   }
 
   @Post('upload')
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -128,7 +128,7 @@ export class DocumentsController {
   }
 
   @Post(':id/approve')
-  @Roles(RoleName.LEGAL_ADMIN)
+  @Roles(RoleName.HR_ADMIN)
   approve(@Param('id') id: string, @CurrentUser() user: User) {
     return this.documentsService.approve(id, user.id);
   }
@@ -146,7 +146,7 @@ export class DocumentsController {
   }
 
   @Delete(':id')
-  @Roles(RoleName.HR_ADMIN, RoleName.IT_ADMIN)
+  @Roles(RoleName.HR_ADMIN)
   delete(@Param('id') id: string, @CurrentUser() user: User) {
     return this.documentsService.delete(id, user.id);
   }

@@ -7,7 +7,7 @@ import { RoleName } from '../../entities/role.entity';
 
 @Controller('api/admin/audit')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(RoleName.IT_ADMIN, RoleName.LEGAL_ADMIN)
+@Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 

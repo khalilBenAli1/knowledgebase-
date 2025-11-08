@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
+import FormationRequestModal from '../components/FormationRequestModal';
 
 interface Formation {
   id: string;
@@ -9,6 +11,9 @@ interface Formation {
   description: string;
   startDate: string;
   endDate?: string;
+  duration?: string;
+  location?: string;
+  maxParticipants?: number;
   imageUrl?: string;
   published: boolean;
   createdBy: {
@@ -22,6 +27,7 @@ type FormationStatus = 'active' | 'upcoming' | 'completed';
 
 export default function FormationsPage() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [formations, setFormations] = useState<Formation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'active' | 'upcoming' | 'completed' | 'drafts' | 'all'>('all');
@@ -34,6 +40,7 @@ export default function FormationsPage() {
     endDate: '',
     imageUrl: '',
   });
+  const [requestingFormation, setRequestingFormation] = useState<Formation | null>(null);
 
   const isAdmin = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
 
@@ -200,6 +207,19 @@ export default function FormationsPage() {
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
+      {/* Formation Request Modal */}
+      {requestingFormation && (
+        <FormationRequestModal
+          formationId={requestingFormation.id}
+          formationTitle={requestingFormation.title}
+          onClose={() => setRequestingFormation(null)}
+          onSuccess={() => {
+            setRequestingFormation(null);
+            loadFormations();
+          }}
+        />
+      )}
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -444,7 +464,8 @@ export default function FormationsPage() {
               {filteredFormations.map((formation) => (
                 <div
                   key={formation.id}
-                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                  onClick={() => navigate(`/formations/${formation.id}`)}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col transform hover:scale-[1.02]"
                 >
                   {formation.imageUrl && (
                     <div className="relative h-48 bg-gray-200">
@@ -495,6 +516,25 @@ export default function FormationsPage() {
                           <span>{new Date(formation.endDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                         </div>
                       )}
+                      {formation.duration && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="font-medium">Durée:</span>
+                          <span>{formation.duration}</span>
+                        </div>
+                      )}
+                      {formation.location && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="font-medium">Lieu:</span>
+                          <span>{formation.location}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="border-t border-gray-200 pt-4 mt-4">
@@ -505,6 +545,20 @@ export default function FormationsPage() {
                         <span className="font-medium">{formation.createdBy.name}</span>
                       </div>
 
+                      {/* User Actions */}
+                      {!isAdmin && formation.published && (
+                        <button
+                          onClick={() => setRequestingFormation(formation)}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-biat-primary to-biat-accent text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Demander cette formation
+                        </button>
+                      )}
+
+                      {/* Admin Actions */}
                       {isAdmin && (
                         <div className="flex gap-2">
                           <button

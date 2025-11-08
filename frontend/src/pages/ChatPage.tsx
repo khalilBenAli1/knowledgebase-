@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import ChatMessage from '../components/ChatMessage';
-import SourcesList from '../components/SourcesList';
 import TypingIndicator from '../components/TypingIndicator';
 import ChatSearch from '../components/ChatSearch';
 import Autocomplete from '../components/Autocomplete';
@@ -27,7 +26,6 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [selectedSources, setSelectedSources] = useState<any[]>([]);
   const [latestMessageId, setLatestMessageId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -119,12 +117,11 @@ export default function ChatPage() {
   const startNewChat = () => {
     setCurrentSessionId(null);
     setMessages([]);
-    setSelectedSources([]);
     setLatestMessageId(null);
     setShowSearch(false);
   };
 
-  const handleSearchResultClick = (sessionId: string, messageId: string) => {
+  const handleSearchResultClick = (sessionId: string, _messageId: string) => {
     setCurrentSessionId(sessionId);
     setShowSearch(false);
     setSidebarOpen(false);

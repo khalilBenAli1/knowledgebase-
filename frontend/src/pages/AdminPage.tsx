@@ -17,8 +17,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { TableSkeleton } from '../components/SkeletonLoader';
 
 interface Analytics {
   users: { total: number };
@@ -49,7 +47,6 @@ const COLORS = ['#134a21', '#1a6b2e', '#2d8a45', '#4aa964'];
 
 export default function AdminPage() {
   const { user } = useAuthStore();
-  const isITAdmin = user?.role?.name === 'IT Admin';
   const isHRAdmin = user?.role?.name === 'Gestionnaire RH';
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -269,7 +266,7 @@ export default function AdminPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={(props: any) => `${props.name}: ${(props.percent * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"

@@ -28,8 +28,8 @@ const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const login = useAuthStore((state) => state.login);
   const token = useAuthStore((state) => state.token);
-  const { theme, setTheme } = useTheme();
-  const { language, setLanguage } = useLanguage();
+  const { setTheme } = useTheme();
+  const { setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'preferences'>('profile');
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -285,7 +285,7 @@ const SettingsPage: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={userProfile?.role.name || user?.role || ''}
+                value={userProfile?.role.name || user?.role?.name || ''}
                 disabled
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
               />

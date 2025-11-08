@@ -6,7 +6,7 @@ export class Formation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'varchar', length: 255 })
   title: string;
 
   @Column({ type: 'text' })
@@ -18,14 +18,26 @@ export class Formation {
   @Column({ type: 'date', nullable: true })
   endDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
+  duration: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  location: string;
+
+  @Column({ type: 'int', nullable: true, name: 'max_participants' })
+  maxParticipants: number;
+
+  @Column({ type: 'varchar', nullable: true })
   imageUrl: string;
 
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: false })
   published: boolean;
 
+  @Column({ type: 'uuid' })
+  createdById: string;
+
   @ManyToOne(() => User, { eager: true })
-  @JoinColumn({ name: 'createdBy' })
+  @JoinColumn({ name: 'createdById' })
   createdBy: User;
 
   @CreateDateColumn()

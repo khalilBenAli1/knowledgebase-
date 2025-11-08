@@ -13,7 +13,7 @@ export class OcrController {
   constructor(private ocrService: OcrService) {}
 
   @Post('process/:documentId')
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN, RoleName.IT_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN, RoleName.IT_ADMIN)
   async processDocument(
     @Param('documentId') documentId: string,
     @CurrentUser() user: User,
@@ -24,13 +24,13 @@ export class OcrController {
   }
 
   @Get('text/:documentId')
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN, RoleName.IT_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN, RoleName.IT_ADMIN)
   async getOcrText(@Param('documentId') documentId: string) {
     return this.ocrService.getOcrText(documentId);
   }
 
   @Get('search')
-  @Roles(RoleName.HR_ADMIN, RoleName.LEGAL_ADMIN, RoleName.IT_ADMIN)
+  @Roles(RoleName.HR_ADMIN, RoleName.HR_ADMIN, RoleName.IT_ADMIN)
   async searchByOcrText(@Query('q') query: string, @Query('limit') limit?: number) {
     return this.ocrService.searchByOcrText(query, limit ? parseInt(limit.toString(), 10) : 10);
   }

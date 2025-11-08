@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -17,6 +18,7 @@ interface Actuality {
 }
 
 export default function ActualitiesPage() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const [actualities, setActualities] = useState<Actuality[]>([]);
   const [loading, setLoading] = useState(true);
@@ -310,7 +312,8 @@ export default function ActualitiesPage() {
               {filteredActualities.map((actuality) => (
                 <div
                   key={actuality.id}
-                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                  onClick={() => navigate(`/actualites/${actuality.id}`)}
+                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col transform hover:scale-105"
                 >
                   {actuality.imageUrl && (
                     <div className="relative h-48 bg-gray-200">

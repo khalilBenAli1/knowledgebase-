@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IngestionService } from './ingestion.service';
 import { IngestionController } from './ingestion.controller';
@@ -11,7 +11,7 @@ import { ParserService } from './parser.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Document, DocumentChunk]),
-    DocumentsModule,
+    forwardRef(() => DocumentsModule),
     LLMModule,
   ],
   controllers: [IngestionController],

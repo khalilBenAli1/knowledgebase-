@@ -43,7 +43,7 @@ export class ActualitiesService {
     const actuality = await this.findOne(id);
 
     // Only allow admins to update
-    if (user.role.name !== 'Responsable RH' && user.role.name !== 'Gestionnaire RH') {
+    if (user.role.name !== 'Responsable RH') {
       throw new ForbiddenException('Only admins can update actualities');
     }
 
@@ -63,7 +63,7 @@ export class ActualitiesService {
     const actuality = await this.findOne(id);
 
     // Only allow admins to delete
-    if (user.role.name !== 'Responsable RH' && user.role.name !== 'Gestionnaire RH') {
+    if (user.role.name !== 'Responsable RH') {
       throw new ForbiddenException('Only admins can delete actualities');
     }
 

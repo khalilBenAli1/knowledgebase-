@@ -1,0 +1,12 @@
+// Add these lines to your package.json "scripts" section:
+
+"scripts": {
+  // ... existing scripts ...
+  "migrate": "node scripts/run-migrations.js",
+  "migrate:status": "node scripts/migration-status.js",
+  // ... rest of scripts ...
+}
+
+// After adding, you can run:
+// npm run migrate         - Run all pending migrations
+// npm run migrate:status  - Check which migrations have been run

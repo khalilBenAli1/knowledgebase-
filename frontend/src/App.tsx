@@ -8,6 +8,7 @@ import SignupPage from './pages/SignupPage';
 import AccueilPage from './pages/AccueilPage';
 import ChatPage from './pages/ChatPage';
 import ActualitiesPage from './pages/ActualitiesPage';
+import ActualityDetailPage from './pages/ActualityDetailPage';
 import FormationsPage from './pages/FormationsPage';
 import DocumentsPage from './pages/DocumentsPage';
 import AdminPage from './pages/AdminPage';
@@ -15,6 +16,11 @@ import AuditPage from './pages/AuditPage';
 import UsersPage from './pages/UsersPage';
 import SystemStatusPage from './pages/SystemStatusPage';
 import SettingsPage from './pages/SettingsPage';
+import ManagerDashboardPage from './pages/ManagerDashboardPage';
+import HRCatalogUploadPage from './pages/HRCatalogUploadPage';
+import FormationDetailPage from './pages/FormationDetailPage';
+import NotificationsPage from './pages/NotificationsPage';
+import TeamManagementPage from './pages/TeamManagementPage';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -43,13 +49,19 @@ function App() {
                 <Route index element={<AccueilPage />} />
                 <Route path="chat" element={<ChatPage />} />
                 <Route path="actualites" element={<ActualitiesPage />} />
+                <Route path="actualites/:id" element={<ActualityDetailPage />} />
                 <Route path="formations" element={<FormationsPage />} />
+                <Route path="formations/:id" element={<FormationDetailPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="documents" element={<DocumentsPage />} />
                 <Route path="admin" element={<AdminPage />} />
                 <Route path="audit" element={<AuditPage />} />
                 <Route path="users" element={<UsersPage />} />
                 <Route path="system" element={<SystemStatusPage />} />
                 <Route path="settings" element={<SettingsPage />} />
+                <Route path="manager" element={<ManagerDashboardPage />} />
+                <Route path="hr/catalog" element={<HRCatalogUploadPage />} />
+                <Route path="hr/teams" element={<TeamManagementPage />} />
               </Route>
             </Routes>
 
