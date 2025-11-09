@@ -11,28 +11,46 @@ export class EmailService {
     // Configure nodemailer with Gmail or custom SMTP
     const emailUser = this.configService.get<string>('EMAIL_USER');
     const emailPassword = this.configService.get<string>('EMAIL_PASSWORD');
+    const emailHost = this.configService.get<string>('EMAIL_HOST', 'smtp.gmail.com');
+    const emailPort = this.configService.get<string>('EMAIL_PORT', '587');
+    const emailSecure = this.configService.get<string>('EMAIL_SECURE', 'false');
+
+    this.logger.log('=== EMAIL CONFIGURATION DEBUG ===');
+    this.logger.log(`EMAIL_HOST: ${emailHost}`);
+    this.logger.log(`EMAIL_PORT: ${emailPort}`);
+    this.logger.log(`EMAIL_SECURE: ${emailSecure}`);
+    this.logger.log(`EMAIL_USER: ${emailUser ? `Set (${emailUser})` : 'NOT SET'}`);
+    this.logger.log(`EMAIL_PASSWORD: ${emailPassword ? `Set (length: ${emailPassword.length})` : 'NOT SET'}`);
+    this.logger.log('================================');
 
     // Validate required credentials
     if (!emailUser || !emailPassword) {
       this.logger.error('⚠️  EMAIL CONFIGURATION ERROR: Missing required environment variables');
       this.logger.error(`EMAIL_USER: ${emailUser ? '✓ Set' : '✗ Missing'}`);
       this.logger.error(`EMAIL_PASSWORD: ${emailPassword ? '✓ Set' : '✗ Missing'}`);
-      this.logger.warn('Email functionality will not work without proper credentials!');
+      this.logger.error('');
+      this.logger.error('TROUBLESHOOTING STEPS:');
+      this.logger.error('1. Check that .env file exists in the root directory');
+      this.logger.error('2. Verify EMAIL_USER and EMAIL_PASSWORD are set in .env');
+      this.logger.error('3. Ensure .env file has no trailing spaces or quotes around values');
+      this.logger.error('4. Restart the server after modifying .env');
+      this.logger.error('');
+      this.logger.warn('⚠️  Email functionality will not work without proper credentials!');
     } else {
       this.logger.log('✓ Email credentials loaded successfully');
-      this.logger.log(`Email Host: ${this.configService.get<string>('EMAIL_HOST', 'smtp.gmail.com')}`);
-      this.logger.log(`Email Port: ${this.configService.get<string>('EMAIL_PORT', '587')}`);
+      this.logger.log(`Email Host: ${emailHost}`);
+      this.logger.log(`Email Port: ${emailPort}`);
       this.logger.log(`Email User: ${emailUser}`);
     }
 
     const emailConfig = {
-      host: this.configService.get<string>('EMAIL_HOST', 'smtp.gmail.com'),
-      port: parseInt(this.configService.get<string>('EMAIL_PORT', '587')),
-      secure: this.configService.get<string>('EMAIL_SECURE', 'false') === 'true', // true for 465, false for other ports
-      auth: {
+      host: emailHost,
+      port: parseInt(emailPort),
+      secure: emailSecure === 'true', // true for 465, false for other ports
+      auth: emailUser && emailPassword ? {
         user: emailUser,
         pass: emailPassword,
-      },
+      } : undefined,
     };
 
     this.transporter = nodemailer.createTransport(emailConfig);
