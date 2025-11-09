@@ -134,7 +134,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Users Card */}
           <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-3 md:mb-4">
@@ -210,6 +210,48 @@ export default function AdminPage() {
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {analytics.feedback.useful} / {analytics.feedback.total} positifs
+              </div>
+            </div>
+          )}
+
+          {/* Events Card */}
+          {isHRAdmin && analytics.events && (
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer group"
+              onClick={() => navigate('/evenements')}>
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Événements</div>
+                <div className="p-2 md:p-3 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
+                  <svg className="w-5 h-5 md:w-6 md:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
+                {analytics.events.published}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {analytics.events.totalRegistrations} inscriptions
+              </div>
+            </div>
+          )}
+
+          {/* Formations Card */}
+          {isHRAdmin && analytics.formations && (
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer group"
+              onClick={() => navigate('/formations')}>
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Formations</div>
+                <div className="p-2 md:p-3 bg-orange-50 rounded-lg group-hover:bg-orange-100 transition-colors">
+                  <svg className="w-5 h-5 md:w-6 md:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-orange-600 dark:text-orange-400 group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors">
+                {analytics.formations.pending}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {analytics.formations.total} demandes totales
               </div>
             </div>
           )}

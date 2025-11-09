@@ -22,33 +22,33 @@ export class AdminController {
     return this.adminService.getMostAskedTopics();
   }
 
-  // User Management Endpoints (IT Admin only)
+  // User Management Endpoints (IT Admin and HR Admin)
   @Get('users')
-  @Roles(RoleName.IT_ADMIN)
+  @Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
   getAllUsers() {
     return this.adminService.getAllUsers();
   }
 
   @Get('roles')
-  @Roles(RoleName.IT_ADMIN)
+  @Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
   getAllRoles() {
     return this.adminService.getAllRoles();
   }
 
   @Patch('users/:id/role')
-  @Roles(RoleName.IT_ADMIN)
+  @Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
   updateUserRole(@Param('id') id: string, @Body('roleId') roleId: string) {
     return this.adminService.updateUserRole(id, roleId);
   }
 
   @Patch('users/:id/status')
-  @Roles(RoleName.IT_ADMIN)
+  @Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
   updateUserStatus(@Param('id') id: string, @Body('isActive') isActive: boolean) {
     return this.adminService.updateUserStatus(id, isActive);
   }
 
   @Post('users/invite')
-  @Roles(RoleName.IT_ADMIN)
+  @Roles(RoleName.IT_ADMIN, RoleName.HR_ADMIN)
   inviteUser(@Body() inviteDto: { email: string; name: string; roleId: string }) {
     return this.adminService.inviteUser(inviteDto);
   }

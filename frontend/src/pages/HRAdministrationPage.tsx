@@ -3,14 +3,16 @@ import AdminPage from './AdminPage';
 import DocumentsPage from './DocumentsPage';
 import TeamManagementPage from './TeamManagementPage';
 import AuditPage from './AuditPage';
+import UsersPage from './UsersPage';
 
-type TabType = 'dashboard' | 'documents' | 'teams' | 'audit';
+type TabType = 'dashboard' | 'users' | 'documents' | 'teams' | 'audit';
 
 export default function HRAdministrationPage() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
 
   const tabs = [
     { id: 'dashboard' as TabType, label: 'Tableau de bord', icon: '📊' },
+    { id: 'users' as TabType, label: 'Utilisateurs', icon: '👤' },
     { id: 'documents' as TabType, label: 'Documents', icon: '📄' },
     { id: 'teams' as TabType, label: 'Équipes', icon: '👥' },
     { id: 'audit' as TabType, label: 'Audit', icon: '🔍' },
@@ -46,6 +48,11 @@ export default function HRAdministrationPage() {
         {activeTab === 'dashboard' && (
           <div className="h-full">
             <AdminPage />
+          </div>
+        )}
+        {activeTab === 'users' && (
+          <div className="h-full">
+            <UsersPage />
           </div>
         )}
         {activeTab === 'documents' && (

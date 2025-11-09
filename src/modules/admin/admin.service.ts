@@ -9,6 +9,9 @@ import { DocumentChunk } from '../../entities/document-chunk.entity';
 import { User } from '../../entities/user.entity';
 import { Role } from '../../entities/role.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
+import { Event } from '../../entities/event.entity';
+import { EventRegistration } from '../../entities/event-registration.entity';
+import { FormationRequest, FormationRequestStatus } from '../../entities/formation-request.entity';
 import { FeedbackService } from '../feedback/feedback.service';
 import * as bcrypt from 'bcrypt';
 
@@ -29,19 +32,59 @@ export class AdminService {
     private rolesRepository: Repository<Role>,
     @InjectRepository(AuditLog)
     private auditLogsRepository: Repository<AuditLog>,
+    @InjectRepository(Event)
+    private eventsRepository: Repository<Event>,
+    @InjectRepository(EventRegistration)
+    private eventRegistrationsRepository: Repository<EventRegistration>,
+    @InjectRepository(FormationRequest)
+    private formationRequestsRepository: Repository<FormationRequest>,
     private feedbackService: FeedbackService,
     private configService: ConfigService,
   ) {}
 
   async getAnalytics(): Promise<any> {
+    // Users statistics
     const totalUsers = await this.usersRepository.count();
+    const activeUsers = await this.usersRepository.count({ where: { isActive: true } });
+    const users = await this.usersRepository.find({ relations: ['role'] });
+
+    // Group users by role
+    const usersByRole = users.reduce((acc, user) => {
+      const roleName = user.role?.name || 'Unknown';
+      acc[roleName] = (acc[roleName] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Documents statistics
     const totalDocuments = await this.documentsRepository.count();
     const publishedDocuments = await this.documentsRepository.count({
       where: { status: 'published' as any },
     });
+
+    // Chat statistics
     const totalSessions = await this.sessionsRepository.count();
     const totalMessages = await this.messagesRepository.count();
     const feedbackStats = await this.feedbackService.getStatistics();
+
+    // Events statistics
+    const totalEvents = await this.eventsRepository.count();
+    const publishedEvents = await this.eventsRepository.count({ where: { published: true } });
+    const totalEventRegistrations = await this.eventRegistrationsRepository.count();
+    const upcomingEvents = await this.eventsRepository.count({
+      where: { published: true },
+    });
+
+    // Formation requests statistics
+    const totalFormationRequests = await this.formationRequestsRepository.count();
+    const pendingFormationRequests = await this.formationRequestsRepository.count({
+      where: { status: FormationRequestStatus.PENDING },
+    });
+    const approvedFormationRequests = await this.formationRequestsRepository.count({
+      where: { status: FormationRequestStatus.APPROVED },
+    });
+    const rejectedFormationRequests = await this.formationRequestsRepository.count({
+      where: { status: FormationRequestStatus.DECLINED },
+    });
 
     const recentMessages = await this.messagesRepository
       .createQueryBuilder('message')
@@ -56,15 +99,32 @@ export class AdminService {
     return {
       users: {
         total: totalUsers,
+        active: activeUsers,
+        inactive: totalUsers - activeUsers,
+        byRole: usersByRole,
       },
       documents: {
         total: totalDocuments,
         published: publishedDocuments,
+        draft: totalDocuments - publishedDocuments,
       },
       chat: {
         totalSessions,
         totalMessages,
-        averageMessagesPerSession: totalSessions > 0 ? totalMessages / totalSessions : 0,
+        averageMessagesPerSession: totalSessions > 0 ? Math.round(totalMessages / totalSessions) : 0,
+      },
+      events: {
+        total: totalEvents,
+        published: publishedEvents,
+        draft: totalEvents - publishedEvents,
+        totalRegistrations: totalEventRegistrations,
+        averageRegistrationsPerEvent: totalEvents > 0 ? Math.round(totalEventRegistrations / totalEvents) : 0,
+      },
+      formations: {
+        total: totalFormationRequests,
+        pending: pendingFormationRequests,
+        approved: approvedFormationRequests,
+        rejected: rejectedFormationRequests,
       },
       feedback: feedbackStats,
       activity: {
