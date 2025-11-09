@@ -9,13 +9,29 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {
     // Configure nodemailer with Gmail or custom SMTP
+    const emailUser = this.configService.get<string>('EMAIL_USER');
+    const emailPassword = this.configService.get<string>('EMAIL_PASSWORD');
+
+    // Validate required credentials
+    if (!emailUser || !emailPassword) {
+      this.logger.error('⚠️  EMAIL CONFIGURATION ERROR: Missing required environment variables');
+      this.logger.error(`EMAIL_USER: ${emailUser ? '✓ Set' : '✗ Missing'}`);
+      this.logger.error(`EMAIL_PASSWORD: ${emailPassword ? '✓ Set' : '✗ Missing'}`);
+      this.logger.warn('Email functionality will not work without proper credentials!');
+    } else {
+      this.logger.log('✓ Email credentials loaded successfully');
+      this.logger.log(`Email Host: ${this.configService.get<string>('EMAIL_HOST', 'smtp.gmail.com')}`);
+      this.logger.log(`Email Port: ${this.configService.get<string>('EMAIL_PORT', '587')}`);
+      this.logger.log(`Email User: ${emailUser}`);
+    }
+
     const emailConfig = {
       host: this.configService.get<string>('EMAIL_HOST', 'smtp.gmail.com'),
       port: parseInt(this.configService.get<string>('EMAIL_PORT', '587')),
       secure: this.configService.get<string>('EMAIL_SECURE', 'false') === 'true', // true for 465, false for other ports
       auth: {
-        user: this.configService.get<string>('EMAIL_USER'),
-        pass: this.configService.get<string>('EMAIL_PASSWORD'),
+        user: emailUser,
+        pass: emailPassword,
       },
     };
 

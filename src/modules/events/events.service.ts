@@ -260,7 +260,7 @@ export class EventsService {
   async getEventStatistics(eventId: string, user: User): Promise<any> {
     const event = await this.eventsRepository.findOne({
       where: { id: eventId },
-      relations: ['formFields', 'registrations', 'registrations.user', 'registrations.responses', 'registrations.responses.formField'],
+      relations: ['formFields', 'registrations', 'registrations.user', 'registrations.responses', 'registrations.responses.formField', 'registrations.responses.registration'],
     });
 
     if (!event) {
@@ -273,14 +273,17 @@ export class EventsService {
       throw new ForbiddenException('Only HR can view event statistics');
     }
 
-    const interestedCount = event.registrations.filter((r) => r.status === 'interested').length;
-    const goingCount = event.registrations.filter((r) => r.status === 'going').length;
-    const notGoingCount = event.registrations.filter((r) => r.status === 'not_going').length;
+    // Filter out registrations with null/undefined users (deleted users)
+    const validRegistrations = event.registrations.filter((r) => r.user && r.user.id);
+
+    const interestedCount = validRegistrations.filter((r) => r.status === 'interested').length;
+    const goingCount = validRegistrations.filter((r) => r.status === 'going').length;
+    const notGoingCount = validRegistrations.filter((r) => r.status === 'not_going').length;
 
     // Calculate field statistics
     const fieldStats = {};
     event.formFields.forEach((field) => {
-      const responses = event.registrations
+      const responses = validRegistrations
         .flatMap((r) => r.responses)
         .filter((res) => res.formField.id === field.id);
 
@@ -302,11 +305,13 @@ export class EventsService {
         fieldStats[field.id] = {
           label: field.label,
           type: field.fieldType,
-          responses: responses.map((res) => ({
-            userId: res.registration.user.id,
-            userName: res.registration.user.name,
-            answer: res.answer,
-          })),
+          responses: responses
+            .filter((res) => res.registration?.user)
+            .map((res) => ({
+              userId: res.registration.user.id,
+              userName: res.registration.user.name,
+              answer: res.answer,
+            })),
           totalResponses: responses.length,
         };
       }
@@ -322,9 +327,9 @@ export class EventsService {
         interested: interestedCount,
         going: goingCount,
         notGoing: notGoingCount,
-        total: event.registrations.length,
+        total: validRegistrations.length,
       },
-      registrations: event.registrations.map((r) => ({
+      registrations: validRegistrations.map((r) => ({
         id: r.id,
         user: {
           id: r.user.id,

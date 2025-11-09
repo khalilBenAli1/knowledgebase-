@@ -18,7 +18,7 @@ interface Statistics {
   };
   registrations: Array<{
     id: string;
-    user: {
+    user?: {
       id: string;
       name: string;
       email: string;
@@ -74,21 +74,23 @@ export default function EventStatisticsPage() {
     const allFieldLabels = Object.values(statistics.fieldStatistics).map(f => f.label);
     headers.push(...allFieldLabels);
 
-    const rows = filteredRegistrations.map(reg => {
-      const row = [
-        reg.user.name,
-        reg.user.email,
-        getStatusLabel(reg.status),
-        new Date(reg.createdAt).toLocaleDateString('fr-FR'),
-      ];
+    const rows = filteredRegistrations
+      .filter(reg => reg.user) // Filter out registrations without user
+      .map(reg => {
+        const row = [
+          reg.user?.name || 'Utilisateur supprimé',
+          reg.user?.email || '-',
+          getStatusLabel(reg.status),
+          new Date(reg.createdAt).toLocaleDateString('fr-FR'),
+        ];
 
-      allFieldLabels.forEach(label => {
-        const response = reg.responses.find(r => r.fieldLabel === label);
-        row.push(response?.answer || '-');
+        allFieldLabels.forEach(label => {
+          const response = reg.responses.find(r => r.fieldLabel === label);
+          row.push(response?.answer || '-');
+        });
+
+        return row;
       });
-
-      return row;
-    });
 
     const csv = [headers, ...rows]
       .map(row => row.map(cell => `"${cell}"`).join(','))
@@ -141,9 +143,10 @@ export default function EventStatisticsPage() {
     return null;
   }
 
-  const filteredRegistrations = filter === 'all'
+  const filteredRegistrations = (filter === 'all'
     ? statistics.registrations
-    : statistics.registrations.filter(r => r.status === filter);
+    : statistics.registrations.filter(r => r.status === filter)
+  ).filter(r => r.user); // Filter out registrations without user data
 
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 overflow-y-auto">
@@ -338,8 +341,8 @@ export default function EventStatisticsPage() {
                       <tr key={reg.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="font-medium text-gray-900 dark:text-gray-100">{reg.user.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{reg.user.email}</div>
+                            <div className="font-medium text-gray-900 dark:text-gray-100">{reg.user?.name || 'Utilisateur supprimé'}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{reg.user?.email || '-'}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

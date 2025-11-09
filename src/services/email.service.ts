@@ -7,13 +7,29 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // Validate required credentials
+    if (!smtpUser || !smtpPassword) {
+      this.logger.error('⚠️  SMTP CONFIGURATION ERROR: Missing required environment variables');
+      this.logger.error(`SMTP_USER: ${smtpUser ? '✓ Set' : '✗ Missing'}`);
+      this.logger.error(`SMTP_PASSWORD: ${smtpPassword ? '✓ Set' : '✗ Missing'}`);
+      this.logger.warn('Email functionality will not work without proper credentials!');
+    } else {
+      this.logger.log('✓ SMTP credentials loaded successfully');
+      this.logger.log(`SMTP Host: ${process.env.SMTP_HOST || 'Not set'}`);
+      this.logger.log(`SMTP Port: ${process.env.SMTP_PORT || '587'}`);
+      this.logger.log(`SMTP User: ${smtpUser}`);
+    }
+
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
+        user: smtpUser,
+        pass: smtpPassword,
       },
     });
   }

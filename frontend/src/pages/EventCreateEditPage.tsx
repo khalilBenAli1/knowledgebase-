@@ -12,6 +12,9 @@ interface FormField {
   options?: string[];
   placeholder?: string;
   order: number;
+  createdAt?: string;
+  updatedAt?: string;
+  event?: any;
 }
 
 const FIELD_TYPES = [
@@ -142,7 +145,7 @@ export default function EventCreateEditPage() {
         eventDate: new Date(eventDate).toISOString(),
         location: location || undefined,
         imageUrl: imageUrl || undefined,
-        formFields: formFields.map(({ id, ...field }) => field),
+        formFields: formFields.map(({ id, createdAt, updatedAt, event, ...field }) => field),
       };
 
       let eventId = id;
