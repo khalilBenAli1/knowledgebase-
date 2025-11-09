@@ -141,6 +141,8 @@ export class EmailService {
   }
 
   async sendVerificationEmail(email: string, name: string, token: string): Promise<void> {
+    this.logger.log(`Preparing verification email for ${email} (user: ${name})`);
+
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 
     const content = `
@@ -175,6 +177,8 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, name: string, token: string): Promise<void> {
+    this.logger.log(`Preparing password reset email for ${email} (user: ${name})`);
+
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     const content = `
@@ -211,6 +215,8 @@ export class EmailService {
   }
 
   async sendPasswordChangedNotification(email: string, name: string): Promise<void> {
+    this.logger.log(`Preparing password changed notification for ${email} (user: ${name})`);
+
     const content = `
       <h1>Votre mot de passe a été modifié</h1>
       <p>Bonjour ${name},</p>
@@ -244,6 +250,8 @@ export class EmailService {
   }
 
   async sendAdminPasswordResetEmail(email: string, name: string, tempPassword: string): Promise<void> {
+    this.logger.log(`Preparing admin password reset email for ${email} (user: ${name})`);
+
     const content = `
       <h1>Réinitialisation de mot de passe par l'administrateur</h1>
       <p>Bonjour ${name},</p>
@@ -279,6 +287,8 @@ export class EmailService {
   }
 
   async sendWelcomeEmail(email: string, name: string): Promise<void> {
+    this.logger.log(`Preparing welcome email for ${email} (user: ${name})`);
+
     const content = `
       <h1>Bienvenue sur Assurances BIAT ! 🎉</h1>
       <p>Bonjour ${name},</p>
@@ -309,6 +319,8 @@ export class EmailService {
   }
 
   private async sendEmail(to: string, subject: string, content: string, title: string): Promise<void> {
+    this.logger.log(`Attempting to send email to ${to} with subject: "${subject}"`);
+
     try {
       const htmlContent = this.getEmailTemplate(content, title);
 
@@ -319,9 +331,13 @@ export class EmailService {
         html: htmlContent,
       });
 
-      this.logger.log(`Email sent successfully to ${to}: ${subject}`);
+      this.logger.log(`✓ Email sent successfully to ${to}: ${subject}`);
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}:`, error);
+      this.logger.error(
+        `✗ Failed to send email to ${to} with subject "${subject}"`,
+        error instanceof Error ? error.stack : error
+      );
+      this.logger.error(`Email error details: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       throw new Error('Failed to send email');
     }
   }

@@ -23,6 +23,8 @@ export class EmailService {
   }
 
   async sendVerificationEmail(to: string, name: string, token: string): Promise<void> {
+    this.logger.log(`Attempting to send verification email to ${to} for user ${name}`);
+
     const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
     const verificationLink = `${appUrl}/verify-email?token=${token}`;
 
@@ -71,14 +73,20 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Verification email sent to ${to}`);
+      this.logger.log(`✓ Verification email sent successfully to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send verification email to ${to}`, error);
+      this.logger.error(
+        `✗ Failed to send verification email to ${to}`,
+        error instanceof Error ? error.stack : error
+      );
+      this.logger.error(`Email error details: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       throw new Error('Failed to send verification email');
     }
   }
 
   async sendPasswordResetEmail(to: string, name: string, token: string): Promise<void> {
+    this.logger.log(`Attempting to send password reset email to ${to} for user ${name}`);
+
     const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
     const resetLink = `${appUrl}/reset-password?token=${token}`;
 
@@ -127,14 +135,20 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Password reset email sent to ${to}`);
+      this.logger.log(`✓ Password reset email sent successfully to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send password reset email to ${to}`, error);
+      this.logger.error(
+        `✗ Failed to send password reset email to ${to}`,
+        error instanceof Error ? error.stack : error
+      );
+      this.logger.error(`Email error details: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       throw new Error('Failed to send password reset email');
     }
   }
 
   async sendWelcomeEmail(to: string, name: string): Promise<void> {
+    this.logger.log(`Attempting to send welcome email to ${to} for user ${name}`);
+
     const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
 
     const mailOptions = {
@@ -179,9 +193,13 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Welcome email sent to ${to}`);
+      this.logger.log(`✓ Welcome email sent successfully to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send welcome email to ${to}`, error);
+      this.logger.error(
+        `✗ Failed to send welcome email to ${to}`,
+        error instanceof Error ? error.stack : error
+      );
+      this.logger.error(`Email error details: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       // Don't throw error - notification failure shouldn't block the verification
     }
   }
@@ -192,6 +210,8 @@ export class EmailService {
     requesterName: string,
     formationTitle: string,
   ): Promise<void> {
+    this.logger.log(`Attempting to send formation request notification to ${to} (manager: ${managerName}, requester: ${requesterName}, formation: ${formationTitle})`);
+
     const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
 
     const mailOptions = {
@@ -236,14 +256,20 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Formation request notification sent to ${to}`);
+      this.logger.log(`✓ Formation request notification sent successfully to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send formation request notification to ${to}`, error);
+      this.logger.error(
+        `✗ Failed to send formation request notification to ${to}`,
+        error instanceof Error ? error.stack : error
+      );
+      this.logger.error(`Email error details: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       // Don't throw error - notification failure shouldn't block the request
     }
   }
 
   async sendAdminPasswordResetEmail(to: string, name: string, tempPassword: string): Promise<void> {
+    this.logger.log(`Attempting to send admin password reset email to ${to} for user ${name}`);
+
     const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
 
     const mailOptions = {
@@ -294,9 +320,13 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Admin password reset email sent to ${to}`);
+      this.logger.log(`✓ Admin password reset email sent successfully to ${to}`);
     } catch (error) {
-      this.logger.error(`Failed to send admin password reset email to ${to}`, error);
+      this.logger.error(
+        `✗ Failed to send admin password reset email to ${to}`,
+        error instanceof Error ? error.stack : error
+      );
+      this.logger.error(`Email error details: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
       throw new Error('Failed to send admin password reset email');
     }
   }

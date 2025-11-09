@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -10,6 +10,8 @@ import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -102,6 +104,8 @@ export class UsersService {
   }
 
   async adminResetPassword(userId: string): Promise<{ tempPassword: string }> {
+    this.logger.log(`Admin password reset requested for user ID: ${userId}`);
+
     const user = await this.findById(userId);
 
     // Generate a random temporary password
@@ -111,9 +115,20 @@ export class UsersService {
     user.passwordHash = await bcrypt.hash(tempPassword, 10);
 
     await this.usersRepository.save(user);
+    this.logger.log(`Password updated in database for user ${user.email}`);
 
     // Send email with temporary password
-    await this.emailService.sendAdminPasswordResetEmail(user.email, user.name, tempPassword);
+    try {
+      await this.emailService.sendAdminPasswordResetEmail(user.email, user.name, tempPassword);
+      this.logger.log(`Admin password reset email sent successfully to ${user.email}`);
+    } catch (emailError) {
+      this.logger.error(
+        `Failed to send admin password reset email to ${user.email}`,
+        emailError instanceof Error ? emailError.stack : emailError
+      );
+      this.logger.error(`Email error details: ${emailError instanceof Error ? emailError.message : JSON.stringify(emailError)}`);
+      throw new InternalServerErrorException('Failed to send password reset email. The password has been reset but the user was not notified.');
+    }
 
     return { tempPassword };
   }
