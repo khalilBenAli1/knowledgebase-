@@ -47,10 +47,19 @@ api.interceptors.response.use(
 
     switch (status) {
       case 401:
-        // Unauthorized - logout and redirect to login
-        useAuthStore.getState().logout();
-        window.location.href = '/login';
-        showError('Session expirée. Veuillez vous reconnecter.');
+        // Check if this is an email verification error
+        const errorMessage = (error.response?.data as any)?.message || '';
+        const isEmailVerificationError =
+          errorMessage.includes('vérifier votre email') ||
+          errorMessage.includes('verify your email');
+
+        if (!isEmailVerificationError) {
+          // Unauthorized - logout and redirect to login (except for email verification errors)
+          useAuthStore.getState().logout();
+          window.location.href = '/login';
+          showError('Session expirée. Veuillez vous reconnecter.');
+        }
+        // If it's an email verification error, let the component handle it
         break;
 
       case 403:

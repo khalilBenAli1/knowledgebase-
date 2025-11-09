@@ -9,14 +9,10 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  const canAccessDocuments = user?.role?.name === 'Responsable RH';
-  const canAccessAdmin = ['Responsable RH', 'IT Admin'].includes(user?.role?.name || '');
-  const canAccessAudit = user?.role?.name === 'Responsable RH';
-  const canAccessUsers = user?.role?.name === 'IT Admin';
-  const canAccessManager = user?.role?.name === "Manager";
-  const canAccessHRCatalog = user?.role?.name === 'Responsable RH';
-  const canAccessHRTeams = user?.role?.name === 'Responsable RH';
+  const isHR = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
   const isITAdmin = user?.role?.name === 'IT Admin';
+  const canAccessManager = user?.role?.name === "Manager";
+  const canAccessAdmin = isHR || isITAdmin;
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -49,55 +45,20 @@ export default function Layout() {
             <Link to="/actualites" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/actualites') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
               Actualités
             </Link>
-                        {canAccessManager && (
+            {canAccessManager && (
               <Link to="/manager" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/manager') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
                 Équipes
               </Link>
             )}
-            <Link to="/formations" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+            <Link to="/formations" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${location.pathname.startsWith('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
               Formations
             </Link>
-            <Link to="/my-formation-requests" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/my-formation-requests') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-              Demandes
+            <Link to="/evenements" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${location.pathname.startsWith('/evenements') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+              Événements
             </Link>
-            {canAccessDocuments && (
-              <Link to="/documents" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/documents') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Docs
-              </Link>
-            )}
-            {canAccessHRCatalog && (
-              <Link to="/hr/catalog" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/hr/catalog') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Catalogue
-              </Link>
-            )}
-            {canAccessHRCatalog && (
-              <Link to="/hr/formations" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/hr/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                RH
-              </Link>
-            )}
-            {canAccessHRTeams && (
-              <Link to="/hr/teams" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/hr/teams') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Gestion
-              </Link>
-            )}
             {canAccessAdmin && (
-              <Link to="/admin" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/admin') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Admin
-              </Link>
-            )}
-            {canAccessAudit && (
-              <Link to="/audit" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/audit') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Audit
-              </Link>
-            )}
-            {canAccessUsers && (
-              <Link to="/users" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/users') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Users
-              </Link>
-            )}
-            {isITAdmin && (
-              <Link to="/system" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${isActive('/system') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                System
+              <Link to="/admin" className={`px-2 xl:px-3 py-1.5 text-xs xl:text-sm rounded transition-all ${location.pathname.startsWith('/admin') || location.pathname.startsWith('/documents') || location.pathname.startsWith('/hr/teams') || location.pathname.startsWith('/audit') || location.pathname.startsWith('/users') || location.pathname.startsWith('/system') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Administration
               </Link>
             )}
           </nav>
@@ -127,15 +88,15 @@ export default function Layout() {
             {profileDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setProfileDropdownOpen(false)} />
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20 animate-fadeIn">
-                  <div className="px-4 py-3 border-b border-gray-200">
-                    <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
-                    <p className="text-xs text-gray-500">{user?.email}</p>
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-20 animate-fadeIn">
+                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
                   </div>
                   <Link
                     to="/settings"
                     onClick={() => setProfileDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -144,7 +105,7 @@ export default function Layout() {
                   </Link>
                   <button
                     onClick={() => { logout(); setProfileDropdownOpen(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -186,50 +147,15 @@ export default function Layout() {
                   Mes Équipes
                 </Link>
               )}
-              <Link to="/formations" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+              <Link to="/formations" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${location.pathname.startsWith('/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
                 Formations
               </Link>
-              <Link to="/my-formation-requests" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/my-formation-requests') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                Mes Demandes
+              <Link to="/evenements" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${location.pathname.startsWith('/evenements') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                Événements
               </Link>
-              {canAccessDocuments && (
-                <Link to="/documents" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/documents') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Documents
-                </Link>
-              )}
-              {canAccessHRCatalog && (
-                <Link to="/hr/catalog" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/hr/catalog') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Catalogue RH
-                </Link>
-              )}
-              {canAccessHRCatalog && (
-                <Link to="/hr/formations" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/hr/formations') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Formations RH
-                </Link>
-              )}
-              {canAccessHRTeams && (
-                <Link to="/hr/teams" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/hr/teams') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Gestion Équipes
-                </Link>
-              )}
               {canAccessAdmin && (
-                <Link to="/admin" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/admin') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Tableau de bord
-                </Link>
-              )}
-              {canAccessAudit && (
-                <Link to="/audit" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/audit') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Journal d'audit
-                </Link>
-              )}
-              {canAccessUsers && (
-                <Link to="/users" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/users') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Utilisateurs
-                </Link>
-              )}
-              {isITAdmin && (
-                <Link to="/system" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${isActive('/system') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
-                  Système
+                <Link to="/admin" onClick={handleNavClick} className={`block px-4 py-2 rounded-lg transition-all ${location.pathname.startsWith('/admin') || location.pathname.startsWith('/documents') || location.pathname.startsWith('/hr/teams') || location.pathname.startsWith('/audit') || location.pathname.startsWith('/users') || location.pathname.startsWith('/system') ? 'bg-white/20 text-white font-semibold' : 'hover:bg-white/10 text-white/90'}`}>
+                  Administration
                 </Link>
               )}
               <div className="pt-2 border-t border-white/20">

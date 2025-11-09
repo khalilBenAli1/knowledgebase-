@@ -103,37 +103,37 @@ export default function AuditPage() {
   if (loading && page === 1) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-biat-primary">Chargement...</div>
+        <div className="text-biat-primary dark:text-biat-300">Chargement...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold text-biat-primary mb-4 md:mb-8">Journal d'Audit</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-biat-primary dark:text-biat-300 mb-4 md:mb-8">Journal d'Audit</h1>
 
         {/* Filters Section */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
-          <h2 className="text-base md:text-lg font-semibold text-biat-primary mb-3 md:mb-4">Filtres et Recherche</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4 md:p-6 mb-4 md:mb-6">
+          <h2 className="text-base md:text-lg font-semibold text-biat-primary dark:text-biat-300 mb-3 md:mb-4">Filtres et Recherche</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recherche</label>
               <input
                 type="text"
                 value={filters.searchTerm}
                 onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
                 placeholder="Rechercher..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Action</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Action</label>
               <select
                 value={filters.actionFilter}
                 onChange={(e) => handleFilterChange('actionFilter', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100"
               >
                 <option value="">Toutes les actions</option>
                 {uniqueActions.map((action) => (
@@ -145,11 +145,11 @@ export default function AuditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
               <select
                 value={filters.typeFilter}
                 onChange={(e) => handleFilterChange('typeFilter', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100"
               >
                 <option value="">Tous les types</option>
                 {uniqueTypes.map((type) => (
@@ -161,11 +161,11 @@ export default function AuditPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Utilisateur</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Utilisateur</label>
               <select
                 value={filters.userFilter}
                 onChange={(e) => handleFilterChange('userFilter', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100"
               >
                 <option value="">Tous les utilisateurs</option>
                 {uniqueUsers.map((email) => (
@@ -178,7 +178,7 @@ export default function AuditPage() {
           </div>
 
           <div className="mt-4 flex justify-between items-center">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               {filteredLogs.length} résultat{filteredLogs.length > 1 ? 's' : ''} trouvé
               {filteredLogs.length > 1 ? 's' : ''}
             </div>
@@ -187,7 +187,7 @@ export default function AuditPage() {
                 setFilters({ searchTerm: '', actionFilter: '', typeFilter: '', userFilter: '' });
                 setPage(1);
               }}
-              className="text-sm text-biat-primary hover:text-biat-accent font-medium"
+              className="text-sm text-biat-primary dark:text-biat-300 hover:text-biat-accent dark:hover:text-biat-400 font-medium"
             >
               Réinitialiser les filtres
             </button>
@@ -195,13 +195,13 @@ export default function AuditPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
           <div className="overflow-x-auto max-w-full">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-biat-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-biat-50 dark:bg-gray-700">
                 <tr>
                   <th
-                    className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider cursor-pointer hover:bg-biat-100 transition-colors"
+                    className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-biat-100 dark:hover:bg-gray-600 transition-colors"
                     onClick={() => handleSort('timestamp')}
                   >
                     <div className="flex items-center space-x-1">
@@ -217,11 +217,11 @@ export default function AuditPage() {
                       )}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                     Utilisateur
                   </th>
                   <th
-                    className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider cursor-pointer hover:bg-biat-100 transition-colors"
+                    className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-biat-100 dark:hover:bg-gray-600 transition-colors"
                     onClick={() => handleSort('action')}
                   >
                     <div className="flex items-center space-x-1">
@@ -238,7 +238,7 @@ export default function AuditPage() {
                     </div>
                   </th>
                   <th
-                    className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider cursor-pointer hover:bg-biat-100 transition-colors"
+                    className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-biat-100 dark:hover:bg-gray-600 transition-colors"
                     onClick={() => handleSort('targetType')}
                   >
                     <div className="flex items-center space-x-1">
@@ -254,29 +254,29 @@ export default function AuditPage() {
                       )}
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                     Détails
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       Aucun résultat trouvé
                     </td>
                   </tr>
                 ) : (
                   filteredLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                         {new Date(log.timestamp).toLocaleString('fr-FR')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-biat-secondary">
+                        <div className="text-sm font-medium text-biat-secondary dark:text-gray-200">
                           {log.actor?.name || 'Système'}
                         </div>
-                        <div className="text-xs text-gray-500">{log.actor?.email}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{log.actor?.email}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -285,16 +285,16 @@ export default function AuditPage() {
                           {log.action}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                         {log.targetType}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {log.payload && (
                           <details className="cursor-pointer">
-                            <summary className="text-biat-primary hover:text-biat-accent font-medium">
+                            <summary className="text-biat-primary dark:text-biat-300 hover:text-biat-accent dark:hover:text-biat-400 font-medium">
                               Voir détails
                             </summary>
-                            <pre className="text-xs bg-gray-50 p-2 mt-2 rounded border border-gray-200 overflow-x-auto">
+                            <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 mt-2 rounded border border-gray-200 dark:border-gray-600 overflow-x-auto dark:text-gray-300">
                               {JSON.stringify(log.payload, null, 2)}
                             </pre>
                           </details>
@@ -309,15 +309,15 @@ export default function AuditPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+            <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Page {page} sur {totalPages}
               </div>
               <div className="flex space-x-2">
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Précédent
                 </button>
@@ -331,7 +331,7 @@ export default function AuditPage() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                           page === pageNum
                             ? 'bg-biat-primary text-white'
-                            : 'border border-gray-300 text-gray-700 hover:bg-white'
+                            : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'
                         }`}
                       >
                         {pageNum}
@@ -342,7 +342,7 @@ export default function AuditPage() {
                 <button
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Suivant
                 </button>

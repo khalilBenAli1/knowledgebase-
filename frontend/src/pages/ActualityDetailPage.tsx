@@ -227,12 +227,12 @@ export default function ActualityDetailPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50">
+    <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto p-6">
         {/* Back Button */}
         <button
           onClick={() => navigate('/actualites')}
-          className="mb-4 flex items-center gap-2 text-biat-primary hover:text-biat-accent transition-colors"
+          className="mb-4 flex items-center gap-2 text-biat-primary dark:text-biat-accent hover:text-biat-accent dark:hover:text-biat-primary transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -241,10 +241,10 @@ export default function ActualityDetailPage() {
         </button>
 
         {/* Actuality Card */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Image */}
           {actuality.imageUrl && (
-            <div className="relative h-96 bg-gray-200">
+            <div className="relative h-96 bg-gray-200 dark:bg-gray-700">
               <img
                 src={actuality.imageUrl}
                 alt={actuality.title}
@@ -259,30 +259,30 @@ export default function ActualityDetailPage() {
           {/* Content */}
           <div className="p-8">
             {/* Title */}
-            <h1 className="text-4xl font-bold text-biat-primary mb-4">{actuality.title}</h1>
+            <h1 className="text-4xl font-bold text-biat-primary dark:text-biat-accent mb-4">{actuality.title}</h1>
 
             {/* Meta */}
-            <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
-              <div className="flex items-center gap-3 text-gray-600">
+            <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                 <div className="w-10 h-10 bg-biat-primary text-white rounded-full flex items-center justify-center font-bold">
                   {actuality.createdBy.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{actuality.createdBy.name}</p>
-                  <p className="text-sm text-gray-500">{formatDate(actuality.createdAt)}</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">{actuality.createdBy.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(actuality.createdAt)}</p>
                 </div>
               </div>
             </div>
 
             {/* Description */}
             <div className="prose prose-lg max-w-none mb-8">
-              <p className="text-gray-700 whitespace-pre-wrap">{actuality.description}</p>
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{actuality.description}</p>
             </div>
 
             {/* Stats and Actions */}
-            <div className="flex items-center justify-between py-4 border-t border-b border-gray-200">
+            <div className="flex items-center justify-between py-4 border-t border-b border-gray-200 dark:border-gray-700">
               {/* Stats */}
-              <div className="flex items-center gap-6 text-sm text-gray-600">
+              <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -312,8 +312,8 @@ export default function ActualityDetailPage() {
                 onClick={handleLike}
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all font-medium ${
                   liked
-                    ? 'bg-pink-100 text-pink-700 hover:bg-pink-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 hover:bg-pink-200 dark:hover:bg-pink-900/50'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 <svg className={`w-6 h-6 ${liked ? 'fill-current' : ''}`} fill={liked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -326,8 +326,8 @@ export default function ActualityDetailPage() {
         </div>
 
         {/* Comments Section */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Commentaires ({stats.comments})
           </h2>
 
@@ -343,7 +343,7 @@ export default function ActualityDetailPage() {
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Écrivez un commentaire..."
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
                 <div className="flex justify-end mt-2">
                   <button
@@ -362,39 +362,39 @@ export default function ActualityDetailPage() {
           <div className="space-y-6">
             {topLevelComments.length === 0 ? (
               <div className="text-center py-12">
-                <svg className="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                 </svg>
-                <p className="text-gray-500">Aucun commentaire pour le moment</p>
-                <p className="text-gray-400 text-sm">Soyez le premier à commenter!</p>
+                <p className="text-gray-500 dark:text-gray-400">Aucun commentaire pour le moment</p>
+                <p className="text-gray-400 dark:text-gray-500 text-sm">Soyez le premier à commenter!</p>
               </div>
             ) : (
               topLevelComments.map((comment) => (
-                <div key={comment.id} className="border-b border-gray-100 pb-6 last:border-b-0">
+                <div key={comment.id} className="border-b border-gray-100 dark:border-gray-700 pb-6 last:border-b-0">
                   {/* Main Comment */}
                   <div className="flex gap-3">
-                    <div className="w-10 h-10 bg-gray-300 text-gray-700 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                    <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full flex items-center justify-center font-bold flex-shrink-0">
                       {comment.user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
-                      <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <p className="font-semibold text-gray-900">{comment.user.name}</p>
-                          <p className="text-xs text-gray-500">{getTimeAgo(comment.createdAt)}</p>
+                          <p className="font-semibold text-gray-900 dark:text-gray-100">{comment.user.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{getTimeAgo(comment.createdAt)}</p>
                         </div>
-                        <p className="text-gray-700">{comment.comment}</p>
+                        <p className="text-gray-700 dark:text-gray-300">{comment.comment}</p>
                       </div>
                       <div className="flex items-center gap-4 mt-2 text-sm">
                         <button
                           onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                          className="text-biat-primary hover:text-biat-accent font-medium"
+                          className="text-biat-primary dark:text-biat-accent hover:text-biat-accent dark:hover:text-biat-primary font-medium"
                         >
                           Répondre
                         </button>
                         {comment.userId === user?.id && (
                           <button
                             onClick={() => handleDeleteComment(comment.id)}
-                            className="text-red-600 hover:text-red-700 font-medium"
+                            className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
                           >
                             Supprimer
                           </button>
@@ -413,7 +413,7 @@ export default function ActualityDetailPage() {
                               onChange={(e) => setReplyText(e.target.value)}
                               placeholder="Écrivez une réponse..."
                               rows={2}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none text-sm"
+                              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             />
                             <div className="flex justify-end gap-2 mt-2">
                               <button
@@ -422,7 +422,7 @@ export default function ActualityDetailPage() {
                                   setReplyingTo(null);
                                   setReplyText('');
                                 }}
-                                className="px-4 py-1.5 text-sm text-gray-600 hover:text-gray-700"
+                                className="px-4 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                               >
                                 Annuler
                               </button>
@@ -443,21 +443,21 @@ export default function ActualityDetailPage() {
                         <div className="mt-4 ml-4 space-y-4">
                           {getReplies(comment.id).map((reply) => (
                             <div key={reply.id} className="flex gap-3">
-                              <div className="w-8 h-8 bg-gray-300 text-gray-700 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                                 {reply.user.name.charAt(0).toUpperCase()}
                               </div>
                               <div className="flex-1">
-                                <div className="bg-gray-50 rounded-lg p-3">
+                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
                                   <div className="flex items-center justify-between mb-1">
-                                    <p className="font-semibold text-gray-900 text-sm">{reply.user.name}</p>
-                                    <p className="text-xs text-gray-500">{getTimeAgo(reply.createdAt)}</p>
+                                    <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{reply.user.name}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{getTimeAgo(reply.createdAt)}</p>
                                   </div>
-                                  <p className="text-gray-700 text-sm">{reply.comment}</p>
+                                  <p className="text-gray-700 dark:text-gray-300 text-sm">{reply.comment}</p>
                                 </div>
                                 {reply.userId === user?.id && (
                                   <button
                                     onClick={() => handleDeleteComment(reply.id)}
-                                    className="text-xs text-red-600 hover:text-red-700 font-medium mt-1"
+                                    className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium mt-1"
                                   >
                                     Supprimer
                                   </button>

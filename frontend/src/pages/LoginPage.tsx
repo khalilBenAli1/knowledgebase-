@@ -22,14 +22,35 @@ export default function LoginPage() {
       login(access_token, user);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Identifiants invalides. Veuillez réessayer.');
-    } finally {
-      setLoading(false);
+      try {
+        const errorMessage = err.response?.data?.message || 'Identifiants invalides. Veuillez réessayer.';
+
+        // Check if error is about email verification
+        if (errorMessage.includes('vérifier votre email') || errorMessage.includes('verify your email')) {
+          // Store email in sessionStorage for verification page
+          console.log('LOGIN: Email verification required for:', email);
+          sessionStorage.setItem('pendingVerificationEmail', email);
+          console.log('LOGIN: Stored in sessionStorage:', sessionStorage.getItem('pendingVerificationEmail'));
+          console.log('LOGIN: Navigating to /verification-required');
+
+          // Set loading to false before navigating
+          setLoading(false);
+
+          // Navigate immediately
+          navigate('/verification-required');
+        } else {
+          setError(errorMessage);
+          setLoading(false);
+        }
+      } catch (finalError) {
+        console.error('LOGIN: Unexpected error in error handling:', finalError);
+        setLoading(false);
+      }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-biat-50 to-biat-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-biat-50 to-biat-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* Logo and Branding */}
         <div className="text-center mb-8">
@@ -41,22 +62,22 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-biat-primary mb-2">
             Assurances BIAT
           </h1>
-          <p className="text-biat-secondary/70 text-lg">
+          <p className="text-biat-secondary/70 dark:text-gray-300 text-lg">
             Assistant IA - Règlement Intérieur
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-biat-100">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-gray-900/50 p-8 border border-biat-100 dark:border-gray-700">
           <h2 className="text-2xl font-semibold text-biat-primary mb-6 text-center">
             Connexion
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md">
+              <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-4 rounded-md">
                 <div className="flex">
-                  <svg className="h-5 w-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="h-5 w-5 text-red-500 dark:text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
                   </svg>
                   <span className="text-sm">{error}</span>
@@ -65,7 +86,7 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-biat-secondary mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-biat-secondary dark:text-gray-300 mb-2">
                 Adresse e-mail
               </label>
               <input
@@ -73,7 +94,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-biat-primary focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-biat-primary focus:border-transparent transition-all dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 placeholder="votre.email@biat.com.tn"
                 required
                 autoComplete="email"
@@ -81,7 +102,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-biat-secondary mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-biat-secondary dark:text-gray-300 mb-2">
                 Mot de passe
               </label>
               <input
@@ -89,11 +110,16 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-biat-primary focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-biat-primary focus:border-transparent transition-all dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
               />
+              <div className="mt-2 text-right">
+                <Link to="/request-password-reset" className="text-sm text-biat-primary dark:text-biat-accent hover:underline">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
             </div>
 
             <button
@@ -116,8 +142,8 @@ export default function LoginPage() {
           </form>
 
           {/* Signup Link - Simplified */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-center text-sm text-gray-600 mb-3">
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
               Pas encore de compte ?
             </p>
             <Link
@@ -128,13 +154,13 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             <p>Besoin d'aide ? Contactez le service IT</p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-sm text-biat-secondary/60">
+        <div className="mt-8 text-center text-sm text-biat-secondary/60 dark:text-gray-400">
           <p>© 2025 Assurances BIAT. Tous droits réservés.</p>
         </div>
       </div>

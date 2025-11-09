@@ -41,4 +41,14 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
+
+  @Post(':id/reset-password')
+  @Roles(RoleName.IT_ADMIN)
+  async resetPassword(@Param('id') id: string) {
+    const result = await this.usersService.adminResetPassword(id);
+    return {
+      message: 'Mot de passe réinitialisé avec succès. Un email a été envoyé à l\'utilisateur.',
+      tempPassword: result.tempPassword,
+    };
+  }
 }

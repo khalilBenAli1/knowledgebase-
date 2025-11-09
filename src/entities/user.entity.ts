@@ -46,6 +46,9 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   emailVerificationTokenExpires: Date | null;
 
+  @Column({ type: 'timestamp', nullable: true })
+  lastVerificationEmailSent: Date | null;
+
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 

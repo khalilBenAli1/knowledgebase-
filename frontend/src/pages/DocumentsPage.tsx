@@ -36,7 +36,7 @@ export default function DocumentsPage() {
   const { user } = useAuthStore();
 
   const isHR = user?.role?.name === 'Responsable RH';
-  const isITAdmin = user?.role?.name === 'IT Admin';
+  // const isITAdmin = user?.role?.name === 'IT Admin'; // Reserved for future use
 
   useEffect(() => {
     loadDocuments();
@@ -75,16 +75,17 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleApprove = async (id: string) => {
-    try {
-      await api.post(`/documents/${id}/approve`);
-      toast.success('Document approuvé!');
-      loadDocuments();
-    } catch (error) {
-      console.error('Failed to approve document', error);
-      toast.error('Erreur lors de l\'approbation');
-    }
-  };
+  // Reserved for future use
+  // const handleApprove = async (id: string) => {
+  //   try {
+  //     await api.post(`/documents/${id}/approve`);
+  //     toast.success('Document approuvé!');
+  //     loadDocuments();
+  //   } catch (error) {
+  //     console.error('Failed to approve document', error);
+  //     toast.error('Erreur lors de l\'approbation');
+  //   }
+  // };
 
   const handlePublish = async (id: string) => {
     try {
@@ -129,16 +130,17 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleProcess = async (id: string) => {
-    try {
-      await api.post(`/ingestion/process/${id}`);
-      toast.success('Traitement du document commencé');
-      loadDocuments();
-    } catch (error) {
-      console.error('Failed to process document', error);
-      toast.error('Erreur lors du traitement');
-    }
-  };
+  // Reserved for future use
+  // const handleProcess = async (id: string) => {
+  //   try {
+  //     await api.post(`/ingestion/process/${id}`);
+  //     toast.success('Traitement du document commencé');
+  //     loadDocuments();
+  //   } catch (error) {
+  //     console.error('Failed to process document', error);
+  //     toast.error('Erreur lors du traitement');
+  //   }
+  // };
 
   const handlePreview = (doc: Document) => {
     setSelectedDocument(doc);
@@ -221,10 +223,10 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="p-3 md:p-6 lg:p-8 bg-gray-50 min-h-screen">
+    <div className="p-3 md:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-biat-primary">Gestion des Documents</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-biat-primary dark:text-biat-300">Gestion des Documents</h1>
           {isHR && (
             <label className="bg-biat-primary text-white px-4 md:px-6 py-2 md:py-3 rounded-lg cursor-pointer hover:bg-biat-accent transition-all shadow-sm hover:shadow-md flex items-center justify-center space-x-2 text-sm md:text-base">
               <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,17 +245,17 @@ export default function DocumentsPage() {
         </div>
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Rechercher</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rechercher</label>
               <div className="relative">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Rechercher par nom ou fichier..."
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
                 />
                 <svg
                   className="w-5 h-5 text-gray-400 absolute left-3 top-2.5"
@@ -272,11 +274,11 @@ export default function DocumentsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filtrer par statut</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filtrer par statut</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-biat-primary"
               >
                 <option value="">Tous les statuts</option>
                 {uniqueStatuses.map((status) => (
@@ -288,50 +290,50 @@ export default function DocumentsPage() {
             </div>
           </div>
 
-          <div className="mt-4 text-sm text-gray-600">
+          <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
             {filteredDocuments.length} document{filteredDocuments.length > 1 ? 's' : ''} trouvé
             {filteredDocuments.length > 1 ? 's' : ''}
           </div>
         </div>
 
         {/* Documents - Desktop Table */}
-        <div className="hidden md:block bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-biat-50">
+        <div className="hidden md:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-biat-50 dark:bg-gray-900">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                   Nom
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                   Statut
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                   OCR
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                   Version
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-biat-secondary dark:text-gray-300 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                     Aucun document trouvé
                   </td>
                 </tr>
               ) : (
                 filteredDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={doc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-biat-secondary">{doc.name}</div>
-                      <div className="text-xs text-gray-500">{doc.originalFilename}</div>
+                      <div className="text-sm font-medium text-biat-secondary dark:text-gray-300">{doc.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{doc.originalFilename}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -342,14 +344,14 @@ export default function DocumentsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {doc.ocrText ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                           Oui
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -357,10 +359,10 @@ export default function DocumentsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                       {doc.version}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                       {new Date(doc.createdAt).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm space-x-3">
@@ -414,20 +416,20 @@ export default function DocumentsPage() {
         {/* Documents - Mobile Cards */}
         <div className="md:hidden space-y-4">
           {filteredDocuments.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-md p-6 text-center text-gray-500">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center text-gray-500 dark:text-gray-400">
               Aucun document trouvé
             </div>
           ) : (
             filteredDocuments.map((doc) => (
-              <div key={doc.id} className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
+              <div key={doc.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
                 <div className="mb-3">
-                  <h3 className="text-base font-semibold text-biat-secondary mb-1">{doc.name}</h3>
-                  <p className="text-xs text-gray-500">{doc.originalFilename}</p>
+                  <h3 className="text-base font-semibold text-biat-secondary dark:text-gray-300 mb-1">{doc.name}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{doc.originalFilename}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
                   <div>
-                    <span className="text-xs text-gray-600">Statut:</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Statut:</span>
                     <div className="mt-1">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(doc.status)}`}>
                         {doc.status}
@@ -435,12 +437,12 @@ export default function DocumentsPage() {
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs text-gray-600">Version:</span>
-                    <p className="mt-1 font-medium">{doc.version}</p>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Version:</span>
+                    <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">{doc.version}</p>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-xs text-gray-600">Date:</span>
-                    <p className="mt-1 font-medium">{new Date(doc.createdAt).toLocaleDateString('fr-FR')}</p>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Date:</span>
+                    <p className="mt-1 font-medium text-gray-900 dark:text-gray-100">{new Date(doc.createdAt).toLocaleDateString('fr-FR')}</p>
                   </div>
                 </div>
 
@@ -502,15 +504,15 @@ export default function DocumentsPage() {
       {/* Preview Modal */}
       {showPreviewModal && selectedDocument && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4">
-          <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-start p-4 md:p-6 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] md:max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-start p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex-1 mr-4">
-                <h2 className="text-lg md:text-2xl font-bold text-biat-primary break-words">{selectedDocument.name}</h2>
-                <p className="text-xs md:text-sm text-gray-500 mt-1 break-all">{selectedDocument.originalFilename}</p>
+                <h2 className="text-lg md:text-2xl font-bold text-biat-primary dark:text-biat-300 break-words">{selectedDocument.name}</h2>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1 break-all">{selectedDocument.originalFilename}</p>
               </div>
               <button
                 onClick={() => setShowPreviewModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex-shrink-0"
               >
                 <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -519,39 +521,39 @@ export default function DocumentsPage() {
             </div>
 
             <div className="flex-1 overflow-auto p-3 md:p-6">
-              <div className="bg-gray-100 rounded-lg p-3 md:p-6 mb-3 md:mb-4">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 md:p-6 mb-3 md:mb-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <span className="text-sm font-medium text-gray-600">Statut:</span>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Statut:</span>
                     <span className={`ml-2 px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedDocument.status)}`}>
                       {selectedDocument.status}
                     </span>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600">Version:</span>
-                    <span className="ml-2 text-sm text-gray-900">{selectedDocument.version}</span>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Version:</span>
+                    <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">{selectedDocument.version}</span>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600">Date de création:</span>
-                    <span className="ml-2 text-sm text-gray-900">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Date de création:</span>
+                    <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">
                       {new Date(selectedDocument.createdAt).toLocaleDateString('fr-FR')}
                     </span>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-600">Uploadé par:</span>
-                    <span className="ml-2 text-sm text-gray-900">{selectedDocument.uploader?.name || 'N/A'}</span>
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Uploadé par:</span>
+                    <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">{selectedDocument.uploader?.name || 'N/A'}</span>
                   </div>
                 </div>
               </div>
 
               {/* PDF Preview Placeholder */}
-              <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg h-64 md:h-96 flex items-center justify-center">
+              <div className="bg-white dark:bg-gray-900 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg h-64 md:h-96 flex items-center justify-center">
                 <div className="text-center px-4">
                   <svg className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-3 md:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
-                  <p className="text-gray-600 mb-2 text-sm md:text-base">Prévisualisation du document</p>
-                  <p className="text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
+                  <p className="text-gray-600 dark:text-gray-400 mb-2 text-sm md:text-base">Prévisualisation du document</p>
+                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-3 md:mb-4">
                     {selectedDocument.originalFilename.toLowerCase().endsWith('.pdf')
                       ? 'Cliquez sur le bouton pour ouvrir le lecteur PDF'
                       : 'Seuls les fichiers PDF peuvent être prévisualisés'}
@@ -594,8 +596,8 @@ export default function DocumentsPage() {
       {/* Publishing Progress Modal */}
       {publishingDoc && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-biat-primary mb-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-biat-primary dark:text-biat-300 mb-6 text-center">
               Publication en cours...
             </h3>
 
@@ -617,15 +619,15 @@ export default function DocumentsPage() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-800">Extraction du texte (OCR)</div>
-                  <div className="text-sm text-gray-500">Lecture du document...</div>
+                  <div className="font-semibold text-gray-800 dark:text-gray-200">Extraction du texte (OCR)</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Lecture du document...</div>
                 </div>
               </div>
 
               {/* Parsing Step */}
               <div className="flex items-center gap-4">
                 <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                  publishProgress.parsing ? 'bg-green-500' : publishProgress.ocr ? 'bg-biat-primary' : 'bg-gray-300'
+                  publishProgress.parsing ? 'bg-green-500' : publishProgress.ocr ? 'bg-biat-primary' : 'bg-gray-300 dark:bg-gray-600'
                 }`}>
                   {publishProgress.parsing ? (
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -641,15 +643,15 @@ export default function DocumentsPage() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-800">Traitement du document</div>
-                  <div className="text-sm text-gray-500">Analyse et indexation...</div>
+                  <div className="font-semibold text-gray-800 dark:text-gray-200">Traitement du document</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Analyse et indexation...</div>
                 </div>
               </div>
 
               {/* Publishing Step */}
               <div className="flex items-center gap-4">
                 <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                  publishProgress.publishing ? 'bg-green-500' : publishProgress.parsing ? 'bg-biat-primary' : 'bg-gray-300'
+                  publishProgress.publishing ? 'bg-green-500' : publishProgress.parsing ? 'bg-biat-primary' : 'bg-gray-300 dark:bg-gray-600'
                 }`}>
                   {publishProgress.publishing ? (
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -665,15 +667,15 @@ export default function DocumentsPage() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-800">Publication</div>
-                  <div className="text-sm text-gray-500">Mise en ligne du document...</div>
+                  <div className="font-semibold text-gray-800 dark:text-gray-200">Publication</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Mise en ligne du document...</div>
                 </div>
               </div>
             </div>
 
             {publishProgress.publishing && (
               <div className="mt-6 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>

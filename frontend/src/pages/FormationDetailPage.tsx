@@ -56,9 +56,9 @@ export default function FormationDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      active: 'bg-green-100 text-green-700 border-green-300',
-      upcoming: 'bg-blue-100 text-blue-700 border-blue-300',
-      completed: 'bg-gray-100 text-gray-700 border-gray-300',
+      active: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-600',
+      upcoming: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-600',
+      completed: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
     };
     const labels = {
       active: 'En cours',
@@ -84,7 +84,7 @@ export default function FormationDetailPage() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Formation non trouvée</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Formation non trouvée</h2>
           <button
             onClick={() => navigate('/formations')}
             className="text-biat-primary hover:text-biat-accent"
@@ -111,10 +111,10 @@ export default function FormationDetailPage() {
         Retour aux formations
       </button>
 
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         {/* Header Image */}
         {formation.imageUrl && (
-          <div className="relative h-80 bg-gray-200">
+          <div className="relative h-80 bg-gray-200 dark:bg-gray-700">
             <img
               src={formation.imageUrl}
               alt={formation.title}
@@ -140,22 +140,22 @@ export default function FormationDetailPage() {
 
           {/* Description */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Description</h2>
-            <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Description</h2>
+            <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed whitespace-pre-line">
               {formation.description}
             </p>
           </div>
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-gray-50 p-6 rounded-lg">
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
               <div className="flex items-center gap-3 mb-2">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <h3 className="font-bold text-gray-900">Date de début</h3>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100">Date de début</h3>
               </div>
-              <p className="text-gray-700 text-lg">
+              <p className="text-gray-700 dark:text-gray-300 text-lg">
                 {new Date(formation.startDate).toLocaleDateString('fr-FR', {
                   weekday: 'long',
                   day: 'numeric',
@@ -166,14 +166,14 @@ export default function FormationDetailPage() {
             </div>
 
             {formation.endDate && (
-              <div className="bg-gray-50 p-6 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <h3 className="font-bold text-gray-900">Date de fin</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100">Date de fin</h3>
                 </div>
-                <p className="text-gray-700 text-lg">
+                <p className="text-gray-700 dark:text-gray-300 text-lg">
                   {new Date(formation.endDate).toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     day: 'numeric',
@@ -185,56 +185,56 @@ export default function FormationDetailPage() {
             )}
 
             {formation.duration && (
-              <div className="bg-gray-50 p-6 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h3 className="font-bold text-gray-900">Durée</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100">Durée</h3>
                 </div>
-                <p className="text-gray-700 text-lg">{formation.duration}</p>
+                <p className="text-gray-700 dark:text-gray-300 text-lg">{formation.duration}</p>
               </div>
             )}
 
             {formation.location && (
-              <div className="bg-gray-50 p-6 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <h3 className="font-bold text-gray-900">Lieu</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100">Lieu</h3>
                 </div>
-                <p className="text-gray-700 text-lg">{formation.location}</p>
+                <p className="text-gray-700 dark:text-gray-300 text-lg">{formation.location}</p>
               </div>
             )}
 
             {formation.maxParticipants && (
-              <div className="bg-gray-50 p-6 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
                 <div className="flex items-center gap-3 mb-2">
                   <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  <h3 className="font-bold text-gray-900">Places disponibles</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100">Places disponibles</h3>
                 </div>
-                <p className="text-gray-700 text-lg">{formation.maxParticipants} participants max</p>
+                <p className="text-gray-700 dark:text-gray-300 text-lg">{formation.maxParticipants} participants max</p>
               </div>
             )}
 
-            <div className="bg-gray-50 p-6 rounded-lg">
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg">
               <div className="flex items-center gap-3 mb-2">
                 <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <h3 className="font-bold text-gray-900">Créé par</h3>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100">Créé par</h3>
               </div>
-              <p className="text-gray-700 text-lg">{formation.createdBy.name}</p>
+              <p className="text-gray-700 dark:text-gray-300 text-lg">{formation.createdBy.name}</p>
             </div>
           </div>
 
           {/* Action Buttons */}
           {!isAdmin && formation.published && status !== 'completed' && (
-            <div className="border-t border-gray-200 pt-6">
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
               <button
                 onClick={() => setShowRequestModal(true)}
                 className="w-full md:w-auto px-8 py-4 bg-biat-primary text-white rounded-lg hover:bg-biat-accent transition-colors font-semibold text-lg shadow-lg hover:shadow-xl"

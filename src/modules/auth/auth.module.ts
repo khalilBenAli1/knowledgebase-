@@ -10,10 +10,12 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { UsersModule } from '../users/users.module';
 import { AuditModule } from '../audit/audit.module';
 import { Role } from '../../entities/role.entity';
+import { PasswordResetToken } from '../../entities/password-reset-token.entity';
+import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Role]),
+    TypeOrmModule.forFeature([Role, PasswordResetToken]),
     UsersModule,
     AuditModule,
     PassportModule,
@@ -29,7 +31,7 @@ import { Role } from '../../entities/role.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LocalStrategy],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, LocalStrategy, EmailService],
+  exports: [AuthService, EmailService],
 })
 export class AuthModule {}

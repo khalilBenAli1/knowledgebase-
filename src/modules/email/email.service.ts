@@ -134,6 +134,58 @@ export class EmailService {
     }
   }
 
+  async sendWelcomeEmail(to: string, name: string): Promise<void> {
+    const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+
+    const mailOptions = {
+      from: `"Assurances BIAT" <${this.configService.get<string>('EMAIL_USER')}>`,
+      to,
+      subject: 'Bienvenue sur Assurances BIAT!',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #1e40af; color: white; padding: 20px; text-align: center; }
+            .content { padding: 30px; background-color: #f9fafb; }
+            .button { display: inline-block; padding: 12px 30px; background-color: #1e40af; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Assurances BIAT</h1>
+            </div>
+            <div class="content">
+              <h2>Bienvenue, ${name}!</h2>
+              <p>Félicitations! Votre adresse email a été vérifiée avec succès.</p>
+              <p>Votre compte est maintenant actif et vous pouvez profiter de tous les services de la plateforme Assurances BIAT.</p>
+              <div style="text-align: center;">
+                <a href="${appUrl}/login" class="button">Se connecter</a>
+              </div>
+              <p>Si vous avez des questions ou besoin d'aide, n'hésitez pas à nous contacter.</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} Assurances BIAT. Tous droits réservés.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Welcome email sent to ${to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send welcome email to ${to}`, error);
+      // Don't throw error - notification failure shouldn't block the verification
+    }
+  }
+
   async sendFormationRequestNotification(
     to: string,
     managerName: string,
@@ -188,6 +240,64 @@ export class EmailService {
     } catch (error) {
       this.logger.error(`Failed to send formation request notification to ${to}`, error);
       // Don't throw error - notification failure shouldn't block the request
+    }
+  }
+
+  async sendAdminPasswordResetEmail(to: string, name: string, tempPassword: string): Promise<void> {
+    const appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+
+    const mailOptions = {
+      from: `"Assurances BIAT" <${this.configService.get<string>('EMAIL_USER')}>`,
+      to,
+      subject: 'Réinitialisation de mot de passe - Assurances BIAT',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #1e40af; color: white; padding: 20px; text-align: center; }
+            .content { padding: 30px; background-color: #f9fafb; }
+            .password-box { background-color: #fff; border: 2px solid #1e40af; padding: 15px; margin: 20px 0; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #1e40af; }
+            .warning { background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 20px 0; }
+            .button { display: inline-block; padding: 12px 30px; background-color: #1e40af; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Assurances BIAT</h1>
+            </div>
+            <div class="content">
+              <h2>Bonjour ${name},</h2>
+              <p>Un administrateur a réinitialisé votre mot de passe.</p>
+              <p>Votre nouveau mot de passe temporaire est:</p>
+              <div class="password-box">${tempPassword}</div>
+              <div class="warning">
+                <strong>⚠️ Important:</strong> Pour des raisons de sécurité, veuillez changer ce mot de passe temporaire dès votre première connexion.
+              </div>
+              <div style="text-align: center;">
+                <a href="${appUrl}/login" class="button">Se connecter</a>
+              </div>
+              <p>Si vous n'avez pas demandé cette réinitialisation, veuillez contacter immédiatement l'administrateur.</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} Assurances BIAT. Tous droits réservés.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Admin password reset email sent to ${to}`);
+    } catch (error) {
+      this.logger.error(`Failed to send admin password reset email to ${to}`, error);
+      throw new Error('Failed to send admin password reset email');
     }
   }
 }

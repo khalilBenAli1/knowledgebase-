@@ -27,7 +27,8 @@
     "seed": "ts-node -r tsconfig-paths/register src/scripts/seed.ts",
     "roles": "ts-node src/scripts/update-roles.ts",
     "migrate": "node scripts/run-migrations.js",
-    "migrate:status": "node scripts/migration-status.js"
+    "migrate:status": "node scripts/migration-status.js",
+    "verify-user": "node scripts/verify-user.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",

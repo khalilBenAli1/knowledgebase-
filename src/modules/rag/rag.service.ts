@@ -69,7 +69,7 @@ export class RagService {
     // Convert to lowercase for consistency
     processed = processed.toLowerCase();
 
-    // Expand common abbreviations (French)
+    // Expand common abbreviations and add related terms (French)
     const abbreviations: Record<string, string> = {
       'rh': 'ressources humaines',
       'hr': 'human resources',
@@ -78,13 +78,80 @@ export class RagService {
       'docs': 'documents',
     };
 
+    // Add semantic expansion for common insurance/HR terms
+    const semanticExpansions: Record<string, string[]> = {
+      'convention': ['convention collective', 'accord', 'protocole', 'contrat'],
+      'conventions': ['conventions collectives', 'accords', 'protocoles', 'contrats'],
+      'formation': ['formation professionnelle', 'développement', 'apprentissage', 'cours'],
+      'congé': ['congé payé', 'vacances', 'absence', 'repos'],
+      'salaire': ['rémunération', 'paie', 'traitement', 'compensation'],
+      'assurance': ['couverture', 'protection', 'garantie', 'police'],
+    };
+
     Object.entries(abbreviations).forEach(([abbr, full]) => {
       const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
       processed = processed.replace(regex, full);
     });
 
+    // Add semantic expansions to query for better recall
+    Object.entries(semanticExpansions).forEach(([term, expansions]) => {
+      const regex = new RegExp(`\\b${term}\\b`, 'gi');
+      if (regex.test(processed)) {
+        // Don't replace, but note that we should search for related terms
+        this.logger.debug(`Query contains "${term}", will benefit from semantic matching`);
+      }
+    });
+
     this.logger.debug(`Preprocessed query: "${query}" -> "${processed}"`);
     return processed;
+  }
+
+  /**
+   * Apply document diversity to ensure results span multiple documents
+   * This prevents all chunks from coming from a single document
+   */
+  private applyDocumentDiversity(
+    results: SearchResult[],
+    topK: number,
+    maxPerDocument: number = 3,
+  ): SearchResult[] {
+    const diverseResults: SearchResult[] = [];
+    const documentChunkCounts = new Map<string, number>();
+
+    // Sort by similarity first
+    const sortedResults = [...results].sort((a, b) => b.similarity - a.similarity);
+
+    for (const result of sortedResults) {
+      if (diverseResults.length >= topK) break;
+
+      const docId = result.document?.id;
+      if (!docId) {
+        diverseResults.push(result);
+        continue;
+      }
+
+      const currentCount = documentChunkCounts.get(docId) || 0;
+
+      // Allow up to maxPerDocument chunks from same document
+      if (currentCount < maxPerDocument) {
+        diverseResults.push(result);
+        documentChunkCounts.set(docId, currentCount + 1);
+      }
+    }
+
+    // Log diversity stats
+    const docStats = Array.from(documentChunkCounts.entries())
+      .map(([docId, count]) => {
+        const docName = diverseResults.find(r => r.document?.id === docId)?.document?.name || docId;
+        return `${docName}: ${count}`;
+      })
+      .join(', ');
+
+    this.logger.log(
+      `✓ Applied diversity: ${diverseResults.length} chunks from ${documentChunkCounts.size} documents (${docStats})`
+    );
+
+    return diverseResults;
   }
 
   async searchSimilarChunks(
@@ -224,7 +291,12 @@ export class RagService {
 
   async retrieveContext(query: string): Promise<RetrievalResult> {
     const topK = parseInt(this.configService.get('TOP_K_RESULTS', '5'));
-    const searchResults = await this.searchSimilarChunks(query, topK);
+
+    // Retrieve more results initially (topK * 2) to have more candidates for diversity
+    const initialResults = await this.searchSimilarChunks(query, topK * 2);
+
+    // Apply document diversity (max 3 chunks per document by default)
+    const searchResults = this.applyDocumentDiversity(initialResults, topK, 3);
 
     const context = searchResults.map((result) => result.chunk.chunkText);
 

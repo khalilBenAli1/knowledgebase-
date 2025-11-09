@@ -40,34 +40,52 @@ export class FormationRequestsService {
       throw new BadRequestException('You do not have a manager assigned. Please contact HR.');
     }
 
-    // Check if formation exists
-    const formation = await this.formationsRepository.findOne({
-      where: { id: createDto.formationId },
-    });
+    // Validate that either formationId OR custom formation fields are provided
+    const isCatalogRequest = !!createDto.formationId;
+    const isCustomRequest = !!createDto.customFormationTitle;
 
-    if (!formation) {
-      throw new NotFoundException('Formation not found');
+    if (!isCatalogRequest && !isCustomRequest) {
+      throw new BadRequestException('Either formationId or customFormationTitle must be provided');
     }
 
-    if (!formation.published) {
-      throw new BadRequestException('This formation is not available for requests');
+    if (isCatalogRequest && isCustomRequest) {
+      throw new BadRequestException('Cannot provide both formationId and customFormationTitle');
     }
 
-    // Check if user already has a pending request for this formation
-    const existingRequest = await this.requestsRepository.findOne({
-      where: {
-        formationId: createDto.formationId,
-        requesterId: userId,
-        status: FormationRequestStatus.PENDING,
-      },
-    });
+    // If requesting from catalog, validate formation exists
+    if (isCatalogRequest) {
+      const formation = await this.formationsRepository.findOne({
+        where: { id: createDto.formationId },
+      });
 
-    if (existingRequest) {
-      throw new BadRequestException('You already have a pending request for this formation');
+      if (!formation) {
+        throw new NotFoundException('Formation not found');
+      }
+
+      if (!formation.published) {
+        throw new BadRequestException('This formation is not available for requests');
+      }
+
+      // Check if user already has a pending request for this formation
+      const existingRequest = await this.requestsRepository.findOne({
+        where: {
+          formationId: createDto.formationId,
+          requesterId: userId,
+          status: FormationRequestStatus.PENDING,
+        },
+      });
+
+      if (existingRequest) {
+        throw new BadRequestException('You already have a pending request for this formation');
+      }
     }
 
     const request = this.requestsRepository.create({
-      formationId: createDto.formationId,
+      formationId: createDto.formationId || null,
+      customFormationTitle: createDto.customFormationTitle || null,
+      customFormationDetails: createDto.customFormationDetails || null,
+      customFormationLink: createDto.customFormationLink || null,
+      customFormationDate: createDto.customFormationDate ? new Date(createDto.customFormationDate) : null,
       requesterId: userId,
       managerId: user.managerId,
       requesterMessage: createDto.requesterMessage,
@@ -76,6 +94,10 @@ export class FormationRequestsService {
 
     const savedRequest = await this.requestsRepository.save(request);
 
+    const formationTitle = isCatalogRequest
+      ? (await this.formationsRepository.findOne({ where: { id: createDto.formationId! } }))?.title || 'Unknown'
+      : createDto.customFormationTitle!;
+
     await this.auditService.log({
       actorId: userId,
       action: AuditAction.DOCUMENT_UPLOAD,
@@ -83,17 +105,18 @@ export class FormationRequestsService {
       targetId: savedRequest.id,
       payload: {
         formationId: createDto.formationId,
-        formationTitle: formation.title,
+        formationTitle: formationTitle,
+        isCustomRequest,
       },
     });
 
-    this.logger.log(`User ${userId} requested formation ${formation.title}`);
+    this.logger.log(`User ${userId} requested formation: ${formationTitle}${isCustomRequest ? ' (custom)' : ''}`);
 
     // Send notification to manager
     await this.notificationsService.notifyFormationRequest(
       user.managerId,
       user.name,
-      formation.title,
+      formationTitle,
       savedRequest.id,
     );
 
@@ -186,19 +209,22 @@ export class FormationRequestsService {
     this.logger.log(`Manager ${managerId} ${request.status} formation request ${requestId}`);
 
     // Notify based on status
-    const formation = await this.formationsRepository.findOne({ where: { id: request.formationId } });
-    if (formation) {
+    const formationTitle = request.formationId
+      ? (await this.formationsRepository.findOne({ where: { id: request.formationId } }))?.title
+      : request.customFormationTitle;
+
+    if (formationTitle) {
       if (request.status === FormationRequestStatus.MANAGER_APPROVED) {
         // Notify HR that there's a new request to review
         await this.notificationsService.notifyHRFormationRequest(
-          formation.title,
+          formationTitle,
           request.requester?.name || 'Employee',
           requestId,
         );
       } else if (request.status === FormationRequestStatus.DECLINED) {
         await this.notificationsService.notifyFormationDeclined(
           request.requesterId,
-          formation.title,
+          formationTitle,
           reviewDto.managerResponse,
         );
       }
@@ -293,14 +319,17 @@ export class FormationRequestsService {
     this.logger.log(`HR ${hrUserId} ${status} formation request ${requestId}`);
 
     // Notify requester of final decision
-    const formation = await this.formationsRepository.findOne({ where: { id: request.formationId } });
-    if (formation) {
+    const formationTitle = request.formationId
+      ? (await this.formationsRepository.findOne({ where: { id: request.formationId } }))?.title
+      : request.customFormationTitle;
+
+    if (formationTitle) {
       if (status === FormationRequestStatus.APPROVED) {
-        await this.notificationsService.notifyFormationApproved(request.requesterId, formation.title);
+        await this.notificationsService.notifyFormationApproved(request.requesterId, formationTitle);
       } else if (status === FormationRequestStatus.DECLINED) {
         await this.notificationsService.notifyFormationDeclined(
           request.requesterId,
-          formation.title,
+          formationTitle,
           hrResponse,
         );
       }

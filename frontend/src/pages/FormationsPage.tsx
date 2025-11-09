@@ -156,7 +156,7 @@ export default function FormationsPage() {
   const getStatusBadge = (formation: Formation) => {
     if (!formation.published) {
       return (
-        <span className="px-3 py-1 bg-gray-500 text-white text-xs font-bold rounded-full shadow-lg">
+        <span className="px-3 py-1 bg-gray-500 dark:bg-gray-600 text-white text-xs font-bold rounded-full shadow-lg">
           BROUILLON
         </span>
       );
@@ -206,7 +206,7 @@ export default function FormationsPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Formation Request Modal */}
       {requestingFormation && (
         <FormationRequestModal
@@ -221,11 +221,11 @@ export default function FormationsPage() {
       )}
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-biat-primary">Les Formations</h1>
-            <p className="text-gray-600 mt-1">Explorez les formations disponibles</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Explorez les formations disponibles</p>
           </div>
           {isAdmin && (
             <button
@@ -242,6 +242,17 @@ export default function FormationsPage() {
               Nouvelle formation
             </button>
           )}
+          {!isAdmin && (
+            <button
+              onClick={() => setRequestingFormation({ id: null, title: null } as any)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Demander une formation personnalisée
+            </button>
+          )}
         </div>
 
         {/* Tabs */}
@@ -251,7 +262,7 @@ export default function FormationsPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'active'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             🟢 Actives ({counts.active})
@@ -261,7 +272,7 @@ export default function FormationsPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'upcoming'
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             🟡 À venir ({counts.upcoming})
@@ -271,7 +282,7 @@ export default function FormationsPage() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'completed'
                 ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             🔴 Terminées ({counts.completed})
@@ -283,7 +294,7 @@ export default function FormationsPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'drafts'
                     ? 'bg-gray-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 Brouillons ({counts.drafts})
@@ -293,7 +304,7 @@ export default function FormationsPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'all'
                     ? 'bg-biat-primary text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 Toutes
@@ -306,7 +317,7 @@ export default function FormationsPage() {
       {/* Form Modal */}
       {showForm && isAdmin && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-biat-primary">
                 {editingId ? 'Modifier la formation' : 'Nouvelle formation'}
@@ -317,7 +328,7 @@ export default function FormationsPage() {
                   setEditingId(null);
                   setFormData({ title: '', description: '', startDate: '', endDate: '', imageUrl: '' });
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -327,30 +338,30 @@ export default function FormationsPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Titre <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="Titre de la formation"
                   required
                   maxLength={255}
                 />
-                <p className="text-xs text-gray-500 mt-1">{formData.title.length}/255 caractères</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formData.title.length}/255 caractères</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={8}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="Description détaillée de la formation..."
                   required
                 />
@@ -358,40 +369,40 @@ export default function FormationsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Date de début <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Date de fin (optionnel)
                   </label>
                   <input
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     min={formData.startDate}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   URL de l'image (optionnel)
                 </label>
                 <input
                   type="url"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="https://example.com/image.jpg"
                 />
                 {formData.imageUrl && (
@@ -408,7 +419,7 @@ export default function FormationsPage() {
                 )}
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="submit"
                   className="flex-1 px-6 py-3 bg-biat-primary text-white rounded-lg hover:bg-biat-accent transition-colors font-medium"
@@ -422,7 +433,7 @@ export default function FormationsPage() {
                     setEditingId(null);
                     setFormData({ title: '', description: '', startDate: '', endDate: '', imageUrl: '' });
                   }}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                 >
                   Annuler
                 </button>
@@ -437,12 +448,12 @@ export default function FormationsPage() {
         <div className="max-w-7xl mx-auto">
           {filteredFormations.length === 0 ? (
             <div className="text-center py-20">
-              <div className="inline-block p-6 bg-gray-100 rounded-full mb-4">
+              <div className="inline-block p-6 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
                 <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 {activeTab === 'drafts'
                   ? 'Aucun brouillon'
                   : activeTab === 'active'
@@ -453,7 +464,7 @@ export default function FormationsPage() {
                   ? 'Aucune formation terminée'
                   : 'Aucune formation disponible'}
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 {isAdmin && activeTab === 'drafts'
                   ? 'Les brouillons que vous créez apparaîtront ici'
                   : 'Les formations apparaîtront ici dès leur publication'}
@@ -465,10 +476,10 @@ export default function FormationsPage() {
                 <div
                   key={formation.id}
                   onClick={() => navigate(`/formations/${formation.id}`)}
-                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col transform hover:scale-[1.02]"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col transform hover:scale-[1.02]"
                 >
                   {formation.imageUrl && (
-                    <div className="relative h-48 bg-gray-200">
+                    <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
                       <img
                         src={formation.imageUrl}
                         alt={formation.title}
@@ -497,10 +508,10 @@ export default function FormationsPage() {
                   )}
                   <div className="p-6 flex-1 flex flex-col">
                     <h3 className="text-xl font-bold text-biat-primary mb-3 line-clamp-2">{formation.title}</h3>
-                    <p className="text-gray-600 mb-4 flex-1 line-clamp-4">{formation.description}</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 flex-1 line-clamp-4">{formation.description}</p>
 
                     <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -508,7 +519,7 @@ export default function FormationsPage() {
                         <span>{new Date(formation.startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                       </div>
                       {formation.endDate && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
@@ -517,7 +528,7 @@ export default function FormationsPage() {
                         </div>
                       )}
                       {formation.duration && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -526,7 +537,7 @@ export default function FormationsPage() {
                         </div>
                       )}
                       {formation.location && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -537,8 +548,8 @@ export default function FormationsPage() {
                       )}
                     </div>
 
-                    <div className="border-t border-gray-200 pt-4 mt-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -548,7 +559,10 @@ export default function FormationsPage() {
                       {/* User Actions */}
                       {!isAdmin && formation.published && (
                         <button
-                          onClick={() => setRequestingFormation(formation)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRequestingFormation(formation);
+                          }}
                           className="w-full px-4 py-2.5 bg-gradient-to-r from-biat-primary to-biat-accent text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center justify-center gap-2"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -562,7 +576,10 @@ export default function FormationsPage() {
                       {isAdmin && (
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleEdit(formation)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(formation);
+                            }}
                             className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium flex items-center justify-center gap-1"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -571,7 +588,10 @@ export default function FormationsPage() {
                             Modifier
                           </button>
                           <button
-                            onClick={() => handleTogglePublish(formation.id, formation.published)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTogglePublish(formation.id, formation.published);
+                            }}
                             className={`flex-1 px-3 py-2 text-sm rounded-lg transition-colors font-medium flex items-center justify-center gap-1 ${
                               formation.published
                                 ? 'bg-gray-50 text-gray-700 hover:bg-gray-100'
@@ -596,7 +616,10 @@ export default function FormationsPage() {
                             )}
                           </button>
                           <button
-                            onClick={() => handleDelete(formation.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(formation.id);
+                            }}
                             className="px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useTheme } from '../contexts/ThemeContext';
-import { useLanguage } from '../contexts/LanguageContext';
 import api from '../services/api';
 import { showSuccess, showError } from '../utils/toast';
 import { validatePassword } from '../utils/errorHandler';
@@ -29,7 +28,6 @@ const SettingsPage: React.FC = () => {
   const login = useAuthStore((state) => state.login);
   const token = useAuthStore((state) => state.token);
   const { setTheme } = useTheme();
-  const { setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'preferences'>('profile');
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -53,7 +51,6 @@ const SettingsPage: React.FC = () => {
     emailNotifications: true,
     chatHistory: true,
     theme: 'light' as 'light' | 'dark',
-    language: 'fr' as 'fr' | 'ar',
   });
 
   useEffect(() => {
@@ -156,9 +153,8 @@ const SettingsPage: React.FC = () => {
     // Save preferences to localStorage
     localStorage.setItem('userPreferences', JSON.stringify(preferences));
 
-    // Update theme and language contexts
+    // Update theme context
     setTheme(preferences.theme);
-    setLanguage(preferences.language);
 
     showSuccess('Préférences enregistrées');
   };
@@ -173,17 +169,17 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Paramètres</h1>
-      <p className="text-gray-600 mb-6">Gérez vos informations personnelles et préférences</p>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Paramètres</h1>
+      <p className="text-gray-600 dark:text-gray-400 mb-6">Gérez vos informations personnelles et préférences</p>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-gray-200 mb-6">
+      <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 mb-6">
         <button
           onClick={() => setActiveTab('profile')}
           className={`pb-3 px-1 font-medium transition-colors ${
             activeTab === 'profile'
               ? 'text-biat-primary border-b-2 border-biat-primary'
-              : 'text-gray-600 hover:text-gray-900'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
           }`}
         >
           Profil
@@ -193,7 +189,7 @@ const SettingsPage: React.FC = () => {
           className={`pb-3 px-1 font-medium transition-colors ${
             activeTab === 'password'
               ? 'text-biat-primary border-b-2 border-biat-primary'
-              : 'text-gray-600 hover:text-gray-900'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
           }`}
         >
           Mot de passe
@@ -203,7 +199,7 @@ const SettingsPage: React.FC = () => {
           className={`pb-3 px-1 font-medium transition-colors ${
             activeTab === 'preferences'
               ? 'text-biat-primary border-b-2 border-biat-primary'
-              : 'text-gray-600 hover:text-gray-900'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
           }`}
         >
           Préférences
@@ -212,15 +208,15 @@ const SettingsPage: React.FC = () => {
 
       {/* Profile Tab */}
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Informations du profil
           </h2>
 
           <form onSubmit={handleProfileUpdate} className="space-y-6">
             {/* Avatar */}
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-biat-100 flex items-center justify-center text-2xl font-bold text-biat-primary">
+              <div className="w-20 h-20 rounded-full bg-biat-100 dark:bg-gray-700 flex items-center justify-center text-2xl font-bold text-biat-primary dark:text-biat-primary">
                 {profileForm.name.charAt(0).toUpperCase()}
               </div>
               <div>
@@ -242,11 +238,11 @@ const SettingsPage: React.FC = () => {
                 />
                 <label
                   htmlFor="avatar-upload"
-                  className="px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer inline-block"
+                  className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer inline-block dark:text-gray-300"
                 >
                   Changer l'avatar
                 </label>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                   JPG, PNG ou GIF. Max 2MB.
                 </p>
               </div>
@@ -254,46 +250,46 @@ const SettingsPage: React.FC = () => {
 
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Nom complet
               </label>
               <input
                 type="text"
                 value={profileForm.name}
                 onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email
               </label>
               <input
                 type="email"
                 value={profileForm.email}
                 onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               />
             </div>
 
             {/* Role (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Rôle
               </label>
               <input
                 type="text"
                 value={userProfile?.role.name || user?.role?.name || ''}
                 disabled
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-500 cursor-not-allowed"
               />
             </div>
 
             {/* Member since */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Membre depuis
               </label>
               <input
@@ -304,7 +300,7 @@ const SettingsPage: React.FC = () => {
                     : '-'
                 }
                 disabled
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-500 cursor-not-allowed"
               />
             </div>
 
@@ -319,7 +315,7 @@ const SettingsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={fetchUserProfile}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Annuler
               </button>
@@ -330,15 +326,15 @@ const SettingsPage: React.FC = () => {
 
       {/* Password Tab */}
       {activeTab === 'password' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
             Modifier le mot de passe
           </h2>
 
           <form onSubmit={handlePasswordChange} className="space-y-6">
             {/* Current Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Mot de passe actuel
               </label>
               <input
@@ -347,14 +343,14 @@ const SettingsPage: React.FC = () => {
                 onChange={(e) =>
                   setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 required
               />
             </div>
 
             {/* New Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Nouveau mot de passe
               </label>
               <input
@@ -365,11 +361,11 @@ const SettingsPage: React.FC = () => {
                   const validation = validatePassword(e.target.value);
                   setPasswordErrors(validation.errors);
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 required
               />
               {passwordErrors.length > 0 && (
-                <div className="mt-2 text-sm text-red-600">
+                <div className="mt-2 text-sm text-red-600 dark:text-red-400">
                   <p className="font-medium">Le mot de passe doit contenir :</p>
                   <ul className="list-disc list-inside">
                     {passwordErrors.map((error, index) => (
@@ -382,7 +378,7 @@ const SettingsPage: React.FC = () => {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Confirmer le nouveau mot de passe
               </label>
               <input
@@ -391,7 +387,7 @@ const SettingsPage: React.FC = () => {
                 onChange={(e) =>
                   setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                 required
               />
             </div>
@@ -411,15 +407,15 @@ const SettingsPage: React.FC = () => {
 
       {/* Preferences Tab */}
       {activeTab === 'preferences' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Préférences</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Préférences</h2>
 
           <div className="space-y-6">
             {/* Notifications */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-gray-900">Notifications par email</h3>
-                <p className="text-sm text-gray-500">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">Notifications par email</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
                   Recevoir des notifications pour les mises à jour importantes
                 </p>
               </div>
@@ -432,15 +428,15 @@ const SettingsPage: React.FC = () => {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-biat-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-biat-primary"></div>
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-biat-100 dark:peer-focus:ring-biat-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-biat-primary"></div>
               </label>
             </div>
 
             {/* Chat History */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-gray-900">Historique des conversations</h3>
-                <p className="text-sm text-gray-500">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">Historique des conversations</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
                   Conserver l'historique de vos conversations
                 </p>
               </div>
@@ -453,62 +449,35 @@ const SettingsPage: React.FC = () => {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-biat-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-biat-primary"></div>
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-biat-100 dark:peer-focus:ring-biat-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-biat-primary"></div>
               </label>
             </div>
 
             {/* Theme */}
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">Thème</h3>
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Thème</h3>
               <div className="flex gap-3">
                 <button
                   onClick={() => setPreferences({ ...preferences, theme: 'light' })}
                   className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
                     preferences.theme === 'light'
-                      ? 'border-biat-primary bg-biat-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                      ? 'border-biat-primary bg-biat-50 dark:bg-biat-primary/10'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                   }`}
                 >
-                  <span className="block font-medium">Clair</span>
-                  <span className="text-sm text-gray-500">Mode jour</span>
+                  <span className="block font-medium dark:text-gray-200">Clair</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-500">Mode jour</span>
                 </button>
                 <button
                   onClick={() => setPreferences({ ...preferences, theme: 'dark' })}
                   className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
                     preferences.theme === 'dark'
-                      ? 'border-biat-primary bg-biat-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                      ? 'border-biat-primary bg-biat-50 dark:bg-biat-primary/10'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                   }`}
                 >
-                  <span className="block font-medium">Sombre</span>
-                  <span className="text-sm text-gray-500">Mode nuit</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Language */}
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Langue</h3>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setPreferences({ ...preferences, language: 'fr' })}
-                  className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
-                    preferences.language === 'fr'
-                      ? 'border-biat-primary bg-biat-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <span className="block font-medium">Français</span>
-                </button>
-                <button
-                  onClick={() => setPreferences({ ...preferences, language: 'ar' })}
-                  className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
-                    preferences.language === 'ar'
-                      ? 'border-biat-primary bg-biat-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                >
-                  <span className="block font-medium">العربية</span>
+                  <span className="block font-medium dark:text-gray-200">Sombre</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-500">Mode nuit</span>
                 </button>
               </div>
             </div>

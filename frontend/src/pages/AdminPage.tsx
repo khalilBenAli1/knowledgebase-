@@ -75,14 +75,14 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="p-8 bg-gray-50 min-h-full">
+      <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-full">
         <div className="max-w-7xl mx-auto">
-          <div className="h-8 w-64 bg-gray-200 animate-pulse rounded mb-8"></div>
+          <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 animate-pulse rounded mb-8"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white p-6 rounded-xl h-32 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
-                <div className="h-8 bg-gray-200 rounded w-16"></div>
+              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-xl h-32 animate-pulse">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-4"></div>
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
               </div>
             ))}
           </div>
@@ -93,11 +93,11 @@ export default function AdminPage() {
 
   if (!analytics) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-full">
+      <div className="p-8 flex items-center justify-center min-h-full dark:bg-gray-900">
         <div className="text-center">
           <div className="text-6xl mb-4">📊</div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">Aucune donnée disponible</h3>
-          <p className="text-gray-500">Essayez de rafraîchir la page</p>
+          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Aucune donnée disponible</h3>
+          <p className="text-gray-500 dark:text-gray-400">Essayez de rafraîchir la page</p>
         </div>
       </div>
     );
@@ -114,13 +114,13 @@ export default function AdminPage() {
   ];
 
   return (
-    <div className="p-3 md:p-6 lg:p-8 bg-gray-50 min-h-full">
+    <div className="p-3 md:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900 min-h-full">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 md:mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-biat-primary mb-1 md:mb-2">Tableau de Bord</h1>
-            <p className="text-sm md:text-base text-gray-600">Vue d'ensemble de votre plateforme</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-biat-primary dark:text-biat-300 mb-1 md:mb-2">Tableau de Bord</h1>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">Vue d'ensemble de votre plateforme</p>
           </div>
           <button
             onClick={loadAnalytics}
@@ -136,39 +136,39 @@ export default function AdminPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Users Card */}
-          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="text-xs md:text-sm font-medium text-gray-600">Utilisateurs</div>
+              <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Utilisateurs</div>
               <div className="p-2 md:p-3 bg-primary-50 rounded-lg">
                 <svg className="w-5 h-5 md:w-6 md:h-6 text-biat-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-biat-primary">
+            <div className="text-2xl md:text-3xl font-bold text-biat-primary dark:text-biat-300">
               {analytics.users.total}
             </div>
-            <div className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-              <span className="text-green-600">↑ 12%</span> ce mois
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1">
+              <span className="text-green-600 dark:text-green-400">↑ 12%</span> ce mois
             </div>
           </div>
 
           {/* Documents Card */}
           {isHRAdmin && (
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all cursor-pointer group"
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer group"
               onClick={() => navigate('/documents')}>
               <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className="text-xs md:text-sm font-medium text-gray-600">Documents</div>
+                <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Documents</div>
                 <div className="p-2 md:p-3 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
                   <svg className="w-5 h-5 md:w-6 md:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-green-600 group-hover:text-green-700 transition-colors">
+              <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors">
                 {analytics.documents.published}
               </div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 sur {analytics.documents.total} total
               </div>
             </div>
@@ -176,19 +176,19 @@ export default function AdminPage() {
 
           {/* Sessions Card */}
           {isHRAdmin && (
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all">
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
               <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className="text-xs md:text-sm font-medium text-gray-600">Sessions</div>
+                <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Sessions</div>
                 <div className="p-2 md:p-3 bg-blue-50 rounded-lg">
                   <svg className="w-5 h-5 md:w-6 md:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </div>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-blue-600">
+              <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
                 {analytics.chat.totalSessions}
               </div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {analytics.chat.totalMessages} messages
               </div>
             </div>
@@ -196,19 +196,19 @@ export default function AdminPage() {
 
           {/* Satisfaction Card */}
           {isHRAdmin && (
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all">
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all">
               <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className="text-xs md:text-sm font-medium text-gray-600">Satisfaction</div>
+                <div className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">Satisfaction</div>
                 <div className="p-2 md:p-3 bg-green-50 rounded-lg">
                   <svg className="w-5 h-5 md:w-6 md:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-green-600">
+              <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">
                 {analytics.feedback.usefulPercentage.toFixed(1)}%
               </div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {analytics.feedback.useful} / {analytics.feedback.total} positifs
               </div>
             </div>
@@ -219,8 +219,8 @@ export default function AdminPage() {
         {isHRAdmin && (
           <>
             {/* Activity Over Time */}
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-md border border-gray-200 mb-4 md:mb-6">
-              <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6">Activité des 7 derniers jours</h2>
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mb-4 md:mb-6">
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 md:mb-6">Activité des 7 derniers jours</h2>
               <ResponsiveContainer width="100%" height={250} className="md:h-[300px]">
                 <LineChart data={timeSeriesData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -257,8 +257,8 @@ export default function AdminPage() {
             {/* Distribution Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Feedback Distribution */}
-              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Répartition des Feedbacks</h2>
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Répartition des Feedbacks</h2>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -281,8 +281,8 @@ export default function AdminPage() {
               </div>
 
               {/* Document Status */}
-              <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Statut des Documents</h2>
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Statut des Documents</h2>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={documentData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -306,41 +306,41 @@ export default function AdminPage() {
             </div>
 
             {/* Detailed Metrics */}
-            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Métriques Détaillées</h2>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Métriques Détaillées</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-primary-50 rounded-lg border border-primary-100">
-                  <div className="text-sm font-medium text-gray-600 mb-2">
+                <div className="p-4 bg-primary-50 dark:bg-gray-700 rounded-lg border border-primary-100 dark:border-gray-600">
+                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
                     Messages par session (moyenne)
                   </div>
-                  <div className="text-2xl font-bold text-biat-primary">
+                  <div className="text-2xl font-bold text-biat-primary dark:text-biat-300">
                     {analytics.chat.averageMessagesPerSession.toFixed(1)}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {analytics.chat.totalMessages} messages totaux
                   </div>
                 </div>
 
-                <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-                  <div className="text-sm font-medium text-gray-600 mb-2">
+                <div className="p-4 bg-green-50 dark:bg-gray-700 rounded-lg border border-green-100 dark:border-gray-600">
+                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
                     Taux de satisfaction
                   </div>
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {analytics.feedback.usefulPercentage.toFixed(1)}%
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {analytics.feedback.total} feedbacks totaux
                   </div>
                 </div>
 
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="text-sm font-medium text-gray-600 mb-2">
+                <div className="p-4 bg-blue-50 dark:bg-gray-700 rounded-lg border border-blue-100 dark:border-gray-600">
+                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
                     Taux de publication
                   </div>
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {((analytics.documents.published / analytics.documents.total) * 100).toFixed(1)}%
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {analytics.documents.total} documents totaux
                   </div>
                 </div>

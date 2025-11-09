@@ -124,13 +124,13 @@ export default function ActualitiesPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-biat-primary">Les Actualités</h1>
-            <p className="text-gray-600 mt-1">Découvrez les dernières nouvelles et annonces</p>
+            <h1 className="text-3xl font-bold text-biat-primary dark:text-biat-accent">Les Actualités</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Découvrez les dernières nouvelles et annonces</p>
           </div>
           {isAdmin && (
             <button
@@ -157,7 +157,7 @@ export default function ActualitiesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'published'
                   ? 'bg-biat-primary text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Publiées ({actualities.filter(a => a.published).length})
@@ -167,7 +167,7 @@ export default function ActualitiesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'drafts'
                   ? 'bg-biat-primary text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Brouillons ({actualities.filter(a => !a.published).length})
@@ -177,7 +177,7 @@ export default function ActualitiesPage() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'all'
                   ? 'bg-biat-primary text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Toutes
@@ -188,10 +188,10 @@ export default function ActualitiesPage() {
 
       {/* Form Modal */}
       {showForm && isAdmin && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-biat-primary">
+              <h2 className="text-2xl font-bold text-biat-primary dark:text-biat-accent">
                 {editingId ? 'Modifier l\'actualité' : 'Nouvelle actualité'}
               </h2>
               <button
@@ -200,9 +200,9 @@ export default function ActualitiesPage() {
                   setEditingId(null);
                   setFormData({ title: '', description: '', imageUrl: '' });
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -210,44 +210,44 @@ export default function ActualitiesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Titre <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Titre <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="Titre de l'actualité"
                   required
                   maxLength={255}
                 />
-                <p className="text-xs text-gray-500 mt-1">{formData.title.length}/255 caractères</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{formData.title.length}/255 caractères</p>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Description <span className="text-red-500">*</span>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Description <span className="text-red-500 dark:text-red-400">*</span>
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={8}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="Description détaillée de l'actualité..."
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                   URL de l'image (optionnel)
                 </label>
                 <input
                   type="url"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   placeholder="https://example.com/image.jpg"
                 />
                 {formData.imageUrl && (
@@ -264,7 +264,7 @@ export default function ActualitiesPage() {
                 )}
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="submit"
                   className="flex-1 px-6 py-3 bg-biat-primary text-white rounded-lg hover:bg-biat-accent transition-colors font-medium"
@@ -278,7 +278,7 @@ export default function ActualitiesPage() {
                     setEditingId(null);
                     setFormData({ title: '', description: '', imageUrl: '' });
                   }}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
                 >
                   Annuler
                 </button>
@@ -293,15 +293,15 @@ export default function ActualitiesPage() {
         <div className="max-w-7xl mx-auto">
           {filteredActualities.length === 0 ? (
             <div className="text-center py-20">
-              <div className="inline-block p-6 bg-gray-100 rounded-full mb-4">
-                <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="inline-block p-6 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+                <svg className="w-16 h-16 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 {activeTab === 'drafts' ? 'Aucun brouillon' : 'Aucune actualité disponible'}
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 {isAdmin && activeTab === 'drafts'
                   ? 'Les brouillons que vous créez apparaîtront ici'
                   : 'Les actualités apparaîtront ici dès leur publication'}
@@ -313,10 +313,10 @@ export default function ActualitiesPage() {
                 <div
                   key={actuality.id}
                   onClick={() => navigate(`/actualites/${actuality.id}`)}
-                  className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col transform hover:scale-105"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-all cursor-pointer flex flex-col transform hover:scale-105"
                 >
                   {actuality.imageUrl && (
-                    <div className="relative h-48 bg-gray-200">
+                    <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
                       <img
                         src={actuality.imageUrl}
                         alt={actuality.title}
@@ -342,16 +342,16 @@ export default function ActualitiesPage() {
                     </div>
                   )}
                   {!actuality.imageUrl && !actuality.published && (
-                    <div className="p-2 bg-yellow-50 border-b border-yellow-200">
-                      <span className="text-yellow-700 text-xs font-semibold">● Brouillon</span>
+                    <div className="p-2 bg-yellow-50 dark:bg-yellow-900/30 border-b border-yellow-200 dark:border-yellow-800/40">
+                      <span className="text-yellow-700 dark:text-yellow-400 text-xs font-semibold">● Brouillon</span>
                     </div>
                   )}
                   <div className="p-6 flex-1 flex flex-col">
-                    <h3 className="text-xl font-bold text-biat-primary mb-3 line-clamp-2">{actuality.title}</h3>
-                    <p className="text-gray-600 mb-4 flex-1 line-clamp-4">{actuality.description}</p>
+                    <h3 className="text-xl font-bold text-biat-primary dark:text-biat-accent mb-3 line-clamp-2">{actuality.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 flex-1 line-clamp-4">{actuality.description}</p>
 
-                    <div className="border-t border-gray-200 pt-4 mt-4">
-                      <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3">
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -364,8 +364,11 @@ export default function ActualitiesPage() {
                       {isAdmin && (
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleEdit(actuality)}
-                            className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium flex items-center justify-center gap-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(actuality);
+                            }}
+                            className="flex-1 px-3 py-2 text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-medium flex items-center justify-center gap-1"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -373,11 +376,14 @@ export default function ActualitiesPage() {
                             Modifier
                           </button>
                           <button
-                            onClick={() => handleTogglePublish(actuality.id, actuality.published)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTogglePublish(actuality.id, actuality.published);
+                            }}
                             className={`flex-1 px-3 py-2 text-sm rounded-lg transition-colors font-medium flex items-center justify-center gap-1 ${
                               actuality.published
-                                ? 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                                : 'bg-green-50 text-green-700 hover:bg-green-100'
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                                : 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50'
                             }`}
                           >
                             {actuality.published ? (
@@ -398,8 +404,11 @@ export default function ActualitiesPage() {
                             )}
                           </button>
                           <button
-                            onClick={() => handleDelete(actuality.id)}
-                            className="px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(actuality.id);
+                            }}
+                            className="px-3 py-2 text-sm bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors font-medium"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

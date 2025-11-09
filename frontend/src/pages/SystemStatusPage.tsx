@@ -58,20 +58,20 @@ export default function SystemStatusPage() {
   };
 
   if (loading) {
-    return <div className="p-8">Chargement...</div>;
+    return <div className="p-8 dark:bg-gray-900 dark:text-gray-100">Chargement...</div>;
   }
 
   if (!status) {
-    return <div className="p-8 text-red-600">Erreur lors du chargement du statut système</div>;
+    return <div className="p-8 text-red-600 dark:text-red-400 dark:bg-gray-900">Erreur lors du chargement du statut système</div>;
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-full">
+    <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-full">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-biat-primary">Statut du Système</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-3xl font-bold text-biat-primary dark:text-biat-300">Statut du Système</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
               Dernière mise à jour: {lastRefresh.toLocaleTimeString('fr-FR')}
             </p>
           </div>
@@ -87,9 +87,9 @@ export default function SystemStatusPage() {
         </div>
 
         {/* LLM Status */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-biat-secondary flex items-center">
+            <h2 className="text-xl font-bold text-biat-secondary dark:text-gray-200 flex items-center">
               <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
@@ -105,29 +105,29 @@ export default function SystemStatusPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">URL Ollama</p>
-              <p className="font-mono text-sm text-biat-primary">{status.llm.url}</p>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">URL Ollama</p>
+              <p className="font-mono text-sm text-biat-primary dark:text-biat-300">{status.llm.url}</p>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Modèles chargés</p>
-              <p className="text-2xl font-bold text-biat-primary">{status.llm.models.length}</p>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Modèles chargés</p>
+              <p className="text-2xl font-bold text-biat-primary dark:text-biat-300">{status.llm.models.length}</p>
             </div>
           </div>
 
           {status.llm.models.length > 0 && (
             <div>
-              <h3 className="font-semibold text-gray-700 mb-3">Modèles disponibles:</h3>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Modèles disponibles:</h3>
               <div className="space-y-2">
                 {status.llm.models.map((model, index) => (
-                  <div key={index} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                  <div key={index} className="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
                     <div>
-                      <p className="font-medium text-biat-secondary">{model.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium text-biat-secondary dark:text-gray-200">{model.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Modifié: {new Date(model.modified).toLocaleString('fr-FR')}
                       </p>
                     </div>
-                    <span className="text-sm font-mono text-gray-600">{formatBytes(model.size)}</span>
+                    <span className="text-sm font-mono text-gray-600 dark:text-gray-400">{formatBytes(model.size)}</span>
                   </div>
                 ))}
               </div>
@@ -136,8 +136,8 @@ export default function SystemStatusPage() {
         </div>
 
         {/* Database Statistics */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-bold text-biat-secondary mb-4 flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-xl font-bold text-biat-secondary dark:text-gray-200 mb-4 flex items-center">
             <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
             </svg>
@@ -181,8 +181,8 @@ export default function SystemStatusPage() {
         </div>
 
         {/* Performance Metrics */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-biat-secondary mb-4 flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-xl font-bold text-biat-secondary dark:text-gray-200 mb-4 flex items-center">
             <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -190,14 +190,14 @@ export default function SystemStatusPage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Messages récents (1h)</p>
-              <p className="text-2xl font-bold text-biat-primary">{status.performance.recentMessagesCount}</p>
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Messages récents (1h)</p>
+              <p className="text-2xl font-bold text-biat-primary dark:text-biat-300">{status.performance.recentMessagesCount}</p>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Horodatage</p>
-              <p className="text-sm font-mono text-biat-primary">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Horodatage</p>
+              <p className="text-sm font-mono text-biat-primary dark:text-biat-300">
                 {new Date(status.performance.timestamp).toLocaleString('fr-FR')}
               </p>
             </div>

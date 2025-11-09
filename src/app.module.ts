@@ -23,6 +23,7 @@ import { FormationRequestsModule } from './modules/formation-requests/formation-
 import { EmailModule } from './modules/email/email.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ManagerInvitationsModule } from './modules/manager-invitations/manager-invitations.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { ManagerInvitationsModule } from './modules/manager-invitations/manager-
     EmailModule,
     ActualitiesModule,
     FormationsModule,
+    EventsModule,
   ],
 })
 export class AppModule {}

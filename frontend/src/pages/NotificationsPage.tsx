@@ -188,15 +188,15 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Notifications</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             {unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : 'Toutes vos notifications sont lues'}
           </p>
         </div>
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllRead}
-            className="px-4 py-2 text-sm font-medium text-biat-primary hover:text-biat-accent transition-colors"
+            className="px-4 py-2 text-sm font-medium text-biat-primary dark:text-biat-300 hover:text-biat-accent dark:hover:text-biat-400 transition-colors"
           >
             Tout marquer comme lu
           </button>
@@ -205,12 +205,12 @@ export default function NotificationsPage() {
 
       {/* Notifications List */}
       {notifications.length === 0 && !loading ? (
-        <div className="bg-white rounded-xl shadow-md p-12 text-center">
-          <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
+          <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">Aucune notification</h3>
-          <p className="text-gray-500">Vos notifications apparaîtront ici</p>
+          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Aucune notification</h3>
+          <p className="text-gray-500 dark:text-gray-400">Vos notifications apparaîtront ici</p>
         </div>
       ) : (
         <>
@@ -219,10 +219,10 @@ export default function NotificationsPage() {
               <div
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
-                className={`bg-white rounded-lg shadow-sm border-2 transition-all cursor-pointer hover:shadow-md ${
+                className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border-2 transition-all cursor-pointer hover:shadow-md ${
                   notification.isRead
-                    ? 'border-gray-200 bg-white'
-                    : 'border-biat-primary bg-blue-50'
+                    ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                    : 'border-biat-primary dark:border-biat-400 bg-blue-50 dark:bg-blue-900/20'
                 }`}
               >
                 <div className="p-4">
@@ -232,15 +232,15 @@ export default function NotificationsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className={`font-semibold ${notification.isRead ? 'text-gray-900' : 'text-biat-primary'}`}>
+                        <h3 className={`font-semibold ${notification.isRead ? 'text-gray-900 dark:text-gray-100' : 'text-biat-primary dark:text-biat-300'}`}>
                           {notification.title}
                         </h3>
                         {!notification.isRead && (
-                          <span className="flex-shrink-0 w-2.5 h-2.5 bg-biat-primary rounded-full"></span>
+                          <span className="flex-shrink-0 w-2.5 h-2.5 bg-biat-primary dark:bg-biat-400 rounded-full"></span>
                         )}
                       </div>
-                      <p className="text-gray-700 text-sm mb-2">{notification.message}</p>
-                      <p className="text-xs text-gray-500">{getTimeAgo(notification.createdAt)}</p>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mb-2">{notification.message}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{getTimeAgo(notification.createdAt)}</p>
                     </div>
                   </div>
                 </div>
@@ -254,7 +254,7 @@ export default function NotificationsPage() {
               {loadingMore && (
                 <div className="flex items-center justify-center">
                   <LoadingSpinner />
-                  <span className="ml-2 text-gray-600">Chargement...</span>
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">Chargement...</span>
                 </div>
               )}
             </div>
@@ -262,7 +262,7 @@ export default function NotificationsPage() {
 
           {/* Footer showing count */}
           {notifications.length > 0 && (
-            <div className="mt-6 text-center text-sm text-gray-500">
+            <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
               {notifications.length} sur {total} notification{total > 1 ? 's' : ''}
             </div>
           )}

@@ -15,12 +15,25 @@ export class FormationRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
-  formationId: string;
+  @Column({ type: 'uuid', nullable: true })
+  formationId: string | null;
 
-  @ManyToOne(() => Formation, { eager: true })
+  @ManyToOne(() => Formation, { eager: true, nullable: true })
   @JoinColumn({ name: 'formationId' })
-  formation: Formation;
+  formation: Formation | null;
+
+  // Custom formation request fields (when formationId is null)
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  customFormationTitle: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  customFormationDetails: string | null;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  customFormationLink: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  customFormationDate: Date | null;
 
   @Column({ type: 'uuid' })
   requesterId: string;

@@ -5,24 +5,24 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
+import VerificationRequiredPage from './pages/VerificationRequiredPage';
+import RequestPasswordResetPage from './pages/RequestPasswordResetPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import AccueilPage from './pages/AccueilPage';
 import ChatPage from './pages/ChatPage';
 import ActualitiesPage from './pages/ActualitiesPage';
 import ActualityDetailPage from './pages/ActualityDetailPage';
-import FormationsPage from './pages/FormationsPage';
-import DocumentsPage from './pages/DocumentsPage';
-import AdminPage from './pages/AdminPage';
-import AuditPage from './pages/AuditPage';
-import UsersPage from './pages/UsersPage';
-import SystemStatusPage from './pages/SystemStatusPage';
 import SettingsPage from './pages/SettingsPage';
 import ManagerDashboardPage from './pages/ManagerDashboardPage';
-import HRCatalogUploadPage from './pages/HRCatalogUploadPage';
-import HRFormationRequestsPage from './pages/HRFormationRequestsPage';
-import MyFormationRequestsPage from './pages/MyFormationRequestsPage';
 import FormationDetailPage from './pages/FormationDetailPage';
 import NotificationsPage from './pages/NotificationsPage';
-import TeamManagementPage from './pages/TeamManagementPage';
+import HRFormationsConsolidatedPage from './pages/HRFormationsConsolidatedPage';
+import ConsolidatedAdminPage from './pages/ConsolidatedAdminPage';
+import EventsPage from './pages/EventsPage';
+import EventDetailPage from './pages/EventDetailPage';
+import EventCreateEditPage from './pages/EventCreateEditPage';
+import EventStatisticsPage from './pages/EventStatisticsPage';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -40,6 +40,10 @@ function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
+              <Route path="/verification-required" element={<VerificationRequiredPage />} />
+              <Route path="/request-password-reset" element={<RequestPasswordResetPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route
                 path="/"
                 element={
@@ -52,20 +56,17 @@ function App() {
                 <Route path="chat" element={<ChatPage />} />
                 <Route path="actualites" element={<ActualitiesPage />} />
                 <Route path="actualites/:id" element={<ActualityDetailPage />} />
-                <Route path="formations" element={<FormationsPage />} />
+                <Route path="formations" element={<HRFormationsConsolidatedPage />} />
                 <Route path="formations/:id" element={<FormationDetailPage />} />
-                <Route path="my-formation-requests" element={<MyFormationRequestsPage />} />
+                <Route path="evenements" element={<EventsPage />} />
+                <Route path="evenements/create" element={<EventCreateEditPage />} />
+                <Route path="evenements/:id" element={<EventDetailPage />} />
+                <Route path="evenements/:id/edit" element={<EventCreateEditPage />} />
+                <Route path="evenements/:id/statistics" element={<EventStatisticsPage />} />
                 <Route path="notifications" element={<NotificationsPage />} />
-                <Route path="documents" element={<DocumentsPage />} />
-                <Route path="admin" element={<AdminPage />} />
-                <Route path="audit" element={<AuditPage />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="system" element={<SystemStatusPage />} />
+                <Route path="admin" element={<ConsolidatedAdminPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="manager" element={<ManagerDashboardPage />} />
-                <Route path="hr/catalog" element={<HRCatalogUploadPage />} />
-                <Route path="hr/formations" element={<HRFormationRequestsPage />} />
-                <Route path="hr/teams" element={<TeamManagementPage />} />
               </Route>
             </Routes>
 

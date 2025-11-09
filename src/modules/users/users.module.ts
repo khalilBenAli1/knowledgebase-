@@ -5,6 +5,7 @@ import { UsersHRController } from './users-hr.controller';
 import { UsersService } from './users.service';
 import { User } from '../../entities/user.entity';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     NotificationsModule,
   ],
   controllers: [UsersController, UsersHRController],
-  providers: [UsersService],
+  providers: [UsersService, EmailService],
   exports: [UsersService],
 })
 export class UsersModule {}

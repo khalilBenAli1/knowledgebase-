@@ -2,15 +2,18 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { User } from '../../entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private emailService: EmailService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -96,5 +99,22 @@ export class UsersService {
     const user = await this.findById(userId);
     user.managerId = managerId;
     return this.usersRepository.save(user);
+  }
+
+  async adminResetPassword(userId: string): Promise<{ tempPassword: string }> {
+    const user = await this.findById(userId);
+
+    // Generate a random temporary password
+    const tempPassword = crypto.randomBytes(8).toString('hex'); // 16 character hex string
+
+    // Hash the temporary password
+    user.passwordHash = await bcrypt.hash(tempPassword, 10);
+
+    await this.usersRepository.save(user);
+
+    // Send email with temporary password
+    await this.emailService.sendAdminPasswordResetEmail(user.email, user.name, tempPassword);
+
+    return { tempPassword };
   }
 }

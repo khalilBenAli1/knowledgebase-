@@ -11,6 +11,7 @@ export enum NotificationType {
   FORMATION_DECLINED = 'formation_declined',
   ACTUALITY_COMMENT = 'actuality_comment',
   ACTUALITY_LIKE = 'actuality_like',
+  EVENT_PUBLISHED = 'event_published',
   SYSTEM = 'system',
 }
 
