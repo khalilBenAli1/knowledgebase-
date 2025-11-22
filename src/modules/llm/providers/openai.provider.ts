@@ -45,14 +45,22 @@ export class OpenAIProvider implements LLMProvider {
         throw new Error('Streaming responses are not supported in this context');
       }
 
+      this.logger.debug(`OpenAI response received: ${response.choices?.length || 0} choices`);
+
       const content = response.choices[0]?.message?.content;
       if (!content) {
+        this.logger.error(`Empty response from OpenAI. Full response: ${JSON.stringify(response)}`);
         throw new Error('Empty response from OpenAI');
       }
 
       return content.trim();
     } catch (error) {
-      this.logger.error('Error calling OpenAI Chat Completion API', error);
+      this.logger.error('Error calling OpenAI Chat Completion API', {
+        errorMessage: error.message,
+        errorName: error.name,
+        statusCode: error?.status || error?.statusCode,
+        responseData: error?.response?.data || error?.error,
+      });
       throw new Error(`Failed to generate answer: ${error.message}`);
     }
   }
@@ -94,6 +102,8 @@ Réponse: ${answer}
 
 Mets à jour le résumé en français en listant uniquement les faits, demandes et réponses confirmées. Maximum 120 mots.`;
 
+      this.logger.debug(`Calling OpenAI for summarization with model: ${this.config.model}`);
+
       const response = await this.client.chat.completions.create({
         model: this.config.model,
         messages: [
@@ -107,14 +117,23 @@ Mets à jour le résumé en français en listant uniquement les faits, demandes 
         throw new Error('Streaming responses are not supported in this context');
       }
 
+      this.logger.debug(`OpenAI response: ${JSON.stringify(response.choices?.[0] || {})}`);
+
       const summary = response.choices[0]?.message?.content?.trim();
       if (!summary) {
+        this.logger.error(`Empty summary from OpenAI. Full response: ${JSON.stringify(response)}`);
         throw new Error('Empty summary from OpenAI');
       }
 
       return summary;
     } catch (error) {
-      this.logger.error('Error summarizing conversation with OpenAI', error);
+      this.logger.error('Error summarizing conversation with OpenAI', {
+        errorMessage: error.message,
+        errorName: error.name,
+        errorStack: error.stack,
+        statusCode: error?.status || error?.statusCode,
+        responseData: error?.response?.data || error?.error,
+      });
       throw new Error(`Failed to summarize conversation: ${error.message}`);
     }
   }
