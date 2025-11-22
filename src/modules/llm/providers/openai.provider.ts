@@ -34,12 +34,17 @@ export class OpenAIProvider implements LLMProvider {
 
       this.logger.debug(`Calling OpenAI model ${this.config.model} at ${this.config.endpoint}`);
 
-      const response = await this.client.chat.completions.create({
+      const payload: Parameters<typeof this.client.chat.completions.create>[0] = {
         model: this.config.model,
         messages,
-        temperature: this.config.temperature,
         max_completion_tokens: this.config.maxTokens,
-      });
+      };
+
+      if (typeof this.config.temperature === 'number' && !Number.isNaN(this.config.temperature)) {
+        (payload as any).temperature = this.config.temperature;
+      }
+
+      const response = await this.client.chat.completions.create(payload);
 
       const content = response.choices[0]?.message?.content;
       if (!content) {
@@ -96,7 +101,6 @@ Mets à jour le résumé en français en listant uniquement les faits, demandes 
           { role: 'system', content: 'Tu compresses des conversations pour conserver le contexte factuel et les intentions utilisateur.' },
           { role: 'user', content: summaryPrompt },
         ],
-        temperature: 0.2,
         max_completion_tokens: 250,
       });
 
