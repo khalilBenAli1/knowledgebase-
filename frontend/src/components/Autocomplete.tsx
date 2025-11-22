@@ -147,8 +147,12 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
   const displayList = value.length >= 3 ? suggestions : popularQuestions;
   const showList = showSuggestions && displayList.length > 0 && !disabled;
 
+  // Extract flex-1 from className to apply to wrapper, keep rest for input
+  const hasFlexOne = className.includes('flex-1');
+  const inputClassName = className.replace('flex-1', '').trim();
+
   return (
-    <div className="relative w-full">
+    <div className={`relative w-full ${hasFlexOne ? 'flex-1' : ''}`}>
       <input
         ref={inputRef}
         type="text"
@@ -157,7 +161,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
         onFocus={handleInputFocus}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={className}
+        className={`w-full ${inputClassName}`}
         disabled={disabled}
       />
 
