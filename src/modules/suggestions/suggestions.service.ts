@@ -51,12 +51,12 @@ export class SuggestionsService {
     try {
       const queryBuilder = this.messagesRepository
         .createQueryBuilder('message')
-        .select('DISTINCT message.content', 'content')
+        .select(['message.content AS content', 'message.createdAt AS createdAt'])
         .where('message.role = :role', { role: MessageRole.USER })
         .andWhere('message.content ILIKE :query', { query: `%${query}%` })
         .andWhere('LENGTH(message.content) > 10')
         .orderBy('message.createdAt', 'DESC')
-        .limit(limit);
+        .limit(limit * 2);
 
       // Optionally filter by user's own history
       if (userId) {
@@ -65,7 +65,18 @@ export class SuggestionsService {
       }
 
       const result = await queryBuilder.getRawMany();
-      return result.map((r) => r.content);
+      const seen = new Set<string>();
+      const deduped: string[] = [];
+      for (const row of result) {
+        if (!seen.has(row.content)) {
+          seen.add(row.content);
+          deduped.push(row.content);
+        }
+        if (deduped.length >= limit) {
+          break;
+        }
+      }
+      return deduped;
     } catch (error) {
       this.logger.error('Error fetching related questions', error);
       return [];
@@ -106,7 +117,7 @@ export class SuggestionsService {
 
       const result = await this.messagesRepository
         .createQueryBuilder('message')
-        .select('DISTINCT message.content', 'content')
+        .select(['message.content AS content', 'message.createdAt AS createdAt'])
         .where('message.role = :role', { role: MessageRole.USER })
         .andWhere(
           '(' +
@@ -119,10 +130,22 @@ export class SuggestionsService {
         )
         .andWhere('LENGTH(message.content) > 10')
         .orderBy('message.createdAt', 'DESC')
-        .limit(limit)
+        .limit(limit * 2)
         .getRawMany();
 
-      return result.map((r) => r.content);
+      const seen = new Set<string>();
+      const deduped: string[] = [];
+      for (const row of result) {
+        if (!seen.has(row.content)) {
+          seen.add(row.content);
+          deduped.push(row.content);
+        }
+        if (deduped.length >= limit) {
+          break;
+        }
+      }
+
+      return deduped;
     } catch (error) {
       this.logger.error('Error fetching topic suggestions', error);
       return [];
