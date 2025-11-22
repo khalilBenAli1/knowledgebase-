@@ -223,7 +223,7 @@ export default function ManagerDashboardPage() {
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              Demandes de formation ({formationRequests.filter(r => r.status === 'PENDING').length})
+              Demandes de formation ({formationRequests.filter(r => r.status === 'pending').length})
             </button>
             <button
               onClick={() => setActiveTab('team')}
@@ -339,7 +339,7 @@ export default function ManagerDashboardPage() {
                         </div>
                       )}
 
-                      {request.status === 'PENDING' ? (
+                      {request.status === 'pending' ? (
                         reviewingRequest === request.id ? (
                           <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">

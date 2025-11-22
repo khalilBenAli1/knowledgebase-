@@ -42,7 +42,7 @@ export class FormationsCatalogService {
     this.logger.log(`Extracting formations from PDF: ${filePath}`);
 
     // Use OCR service to extract text from PDF
-    const text = await this.extractTextFromPDF(filePath);
+    const text = await this.extractTextFromPDF(filePath, createdBy);
 
     // Parse the extracted text to identify formations
     const formations = this.parseFormationsFromText(text);
@@ -51,7 +51,7 @@ export class FormationsCatalogService {
     return formations;
   }
 
-  private async extractTextFromPDF(filePath: string): Promise<string> {
+  private async extractTextFromPDF(filePath: string, createdBy: string): Promise<string> {
     this.logger.log('Using OCR service to extract text from PDF catalog');
 
     try {
@@ -62,7 +62,7 @@ export class FormationsCatalogService {
         originalFilename: fileName,
         filePath: filePath,
         mimeType: 'application/pdf',
-        uploaderId: '00000000-0000-0000-0000-000000000000', // Temporary system UUID
+        uploaderId: createdBy, // Use actual user ID instead of fake UUID
         status: 'uploaded' as any,
         tags: [],
       });
@@ -71,7 +71,7 @@ export class FormationsCatalogService {
       const savedDoc = await this.documentsRepository.save(tempDoc);
 
       // Process with OCR service
-      const processedDoc = await this.ocrService.processDocument(savedDoc.id, 'system', false);
+      const processedDoc = await this.ocrService.processDocument(savedDoc.id, createdBy, false);
 
       // Clean up temporary document
       await this.documentsRepository.delete(savedDoc.id);

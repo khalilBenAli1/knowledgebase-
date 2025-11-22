@@ -276,7 +276,11 @@ export class ChatService {
         }
       }
 
-      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(enhancedQuery);
+      // Expand query with semantic variations for better matching
+      const expandedQuery = this.expandQueryWithSynonyms(enhancedQuery);
+      this.logger.debug(`Expanded query: "${expandedQuery}"`);
+
+      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(expandedQuery);
       sources = retrievedSources;
 
       this.logger.log(`Retrieved ${sources.length} relevant chunks`);
@@ -324,6 +328,55 @@ export class ChatService {
     }
 
     return assistantMessage;
+  }
+
+  /**
+   * Expand query with semantic synonyms and related terms for better document matching
+   */
+  private expandQueryWithSynonyms(query: string): string {
+    const lowerQuery = query.toLowerCase();
+
+    // Define semantic mappings for common terms
+    const semanticExpansions: Record<string, string[]> = {
+      'style': ['code', 'tenue', 'apparence', 'dress code', 'habillement'],
+      'code': ['style', 'règles', 'normes', 'dress code'],
+      'vestimentaire': ['habillement', 'tenue', 'vêtements', 'dress'],
+      'congé': ['congés', 'vacances', 'absence', 'leave', 'repos'],
+      'formation': ['formations', 'training', 'cours', 'apprentissage', 'développement'],
+      'salaire': ['rémunération', 'paie', 'traitement', 'compensation', 'salaires'],
+      'horaire': ['horaires', 'temps de travail', 'planning', 'schedule'],
+      'télétravail': ['remote', 'travail à distance', 'home office', 'work from home'],
+      'réunion': ['réunions', 'meeting', 'rencontre', 'assemblée'],
+      'absence': ['absences', 'congé', 'leave', 'repos'],
+      'maladie': ['santé', 'arrêt maladie', 'sick leave', 'medical'],
+      'prime': ['primes', 'bonus', 'gratification', 'incentive'],
+    };
+
+    // Extract key terms from query
+    const words = lowerQuery.split(/\s+/);
+    const expansions: string[] = [];
+
+    // Add original query
+    expansions.push(query);
+
+    // Add semantic expansions for each word
+    for (const word of words) {
+      // Check if word is in our semantic map
+      for (const [key, synonyms] of Object.entries(semanticExpansions)) {
+        if (word.includes(key) || key.includes(word)) {
+          // Add relevant synonyms
+          synonyms.forEach(syn => {
+            if (!lowerQuery.includes(syn)) {
+              expansions.push(syn);
+            }
+          });
+        }
+      }
+    }
+
+    // Return expanded query (combine original with top synonyms)
+    const uniqueExpansions = [...new Set(expansions)];
+    return uniqueExpansions.slice(0, 5).join(' '); // Limit to avoid token explosion
   }
 
   async searchMessages(userId: string, query: string, sessionId?: string): Promise<ChatMessage[]> {
