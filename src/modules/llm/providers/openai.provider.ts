@@ -148,7 +148,7 @@ ${options?.conversationSummary ? `RÉSUMÉ DE LA CONVERSATION PRÉCÉDENTE:\n${o
 
 RÉPONSE (directe, complète et factuelle):`;
 
-    const messages: Array<{ role: 'system' | 'user'; content: string }> = [
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       { role: 'system', content: systemPrompt },
     ];
 
