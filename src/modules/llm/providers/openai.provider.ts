@@ -149,20 +149,21 @@ Mets à jour le résumé en français en listant uniquement les faits, demandes 
 
 STYLE DE RÉPONSE:
 - Commence directement par la réponse, sans salutations ni phrases d'introduction.
-- Réponds uniquement avec les informations pertinentes à la question, en évitant les rappels ou mises en garde inutiles.
+- Sois CONCIS et DIRECT : réponds en 2-3 phrases ou en liste courte (3-5 points maximum).
 - Utilise un ton professionnel et naturel, avec des phrases courtes et claires.
-- Lorsque c'est possible, réponds en 2-3 paragraphes maximum ou en listes ciblées.
+- Limite ta réponse à l'essentiel de ce qui est demandé.
 
 RÈGLES DE CONTENU:
-1. Priorité à la pertinence: ne cite que les passages utiles à la question.
-2. Donne toutes les informations nécessaires mais bannis les détails superflus.
+1. Priorité à la CONCISION : ne cite que les informations directement utiles à la question.
+2. Donne l'information clé en premier, évite les détails superflus ou le contexte inutile.
 3. Traite "style vestimentaire", "dress code" et "politique vestimentaire" comme des synonymes de "code vestimentaire" sauf indication contraire.
 4. Prends en compte les fautes, abréviations, formulations orales ("c quoi", "c'est quoi", etc.) et les synonymes courants.
-5. Explique les écarts ou exceptions lorsqu'ils existent dans les documents.
-6. Si les passages fournis ne permettent pas de répondre avec certitude, commence par indiquer explicitement que l'information n'est pas confirmée et propose de préciser la demande.
-7. Lorsqu'une question concerne les formations et que des cartes ou listes sont fournies dans le contexte, cite-les en mettant en avant l'intitulé de la formation et les éléments clés (durée, département, tags).
-8. Structure avec listes quand cela améliore la clarté.
-9. Langue: toujours en français.`;
+5. Si les passages fournis ne permettent pas de répondre avec certitude, indique brièvement que l'information n'est pas confirmée.
+6. Lorsqu'une question concerne les formations, cite uniquement le titre et 1-2 détails clés (durée ou date).
+7. Structure avec listes courtes (maximum 5 points) quand cela améliore la clarté.
+8. Langue: toujours en français.
+
+IMPORTANT: Réponds en maximum 100 mots sauf si la question nécessite explicitement plus de détails.`;
 
     const userContent = `QUESTION:
 ${question}
@@ -172,7 +173,7 @@ ${contextText}
 
 ${options?.conversationSummary ? `RÉSUMÉ DE LA CONVERSATION PRÉCÉDENTE:\n${options.conversationSummary}\n\n` : ''}
 
-RÉPONSE (directe, complète et factuelle):`;
+RÉPONSE (directe, concise, maximum 100 mots):`;
 
     const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       { role: 'system', content: systemPrompt },

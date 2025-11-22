@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface TypewriterTextProps {
   text: string;
@@ -30,11 +31,11 @@ export default function TypewriterText({ text, speed = 20, onComplete }: Typewri
   }, [text]);
 
   return (
-    <span>
-      {displayedText}
+    <div className="relative">
+      <ReactMarkdown>{displayedText}</ReactMarkdown>
       {currentIndex < text.length && (
-        <span className="inline-block w-0.5 h-4 bg-blue-600 ml-0.5 animate-pulse"></span>
+        <span className="inline-block w-0.5 h-4 bg-biat-primary dark:bg-biat-300 ml-0.5 animate-pulse"></span>
       )}
-    </span>
+    </div>
   );
 }
