@@ -40,11 +40,10 @@ export class OpenAIProvider implements LLMProvider {
         max_completion_tokens: this.config.maxTokens,
       };
 
-      if (typeof this.config.temperature === 'number' && !Number.isNaN(this.config.temperature)) {
-        (payload as any).temperature = this.config.temperature;
-      }
-
       const response = await this.client.chat.completions.create(payload);
+      if (!('choices' in response)) {
+        throw new Error('Streaming responses are not supported in this context');
+      }
 
       const content = response.choices[0]?.message?.content;
       if (!content) {
@@ -103,6 +102,10 @@ Mets à jour le résumé en français en listant uniquement les faits, demandes 
         ],
         max_completion_tokens: 250,
       });
+
+      if (!('choices' in response)) {
+        throw new Error('Streaming responses are not supported in this context');
+      }
 
       const summary = response.choices[0]?.message?.content?.trim();
       if (!summary) {
