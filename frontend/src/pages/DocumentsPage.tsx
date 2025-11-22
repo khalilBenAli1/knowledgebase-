@@ -35,7 +35,7 @@ export default function DocumentsPage() {
   });
   const { user } = useAuthStore();
 
-  const isHR = user?.role?.name === 'Responsable RH';
+  const isHR = user?.role?.name === 'Gestionnaire RH';
   // const isITAdmin = user?.role?.name === 'IT Admin'; // Reserved for future use
 
   useEffect(() => {

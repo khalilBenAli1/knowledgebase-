@@ -1,5 +1,8 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { RoleName } from '../../entities/role.entity';
 import { FormationRequestsService } from './formation-requests.service';
 import { CreateFormationRequestDto } from './dto/create-formation-request.dto';
 import { ReviewFormationRequestDto } from './dto/review-formation-request.dto';
@@ -51,18 +54,20 @@ export class FormationRequestsController {
 
   // HR Endpoints
   @Get('hr/pending')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.HR_ADMIN)
   async getHRPendingRequests(@Request() req) {
-    // TODO: Add RH role check guard
     return this.formationRequestsService.getHRPendingRequests();
   }
 
   @Put(':id/hr-review')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.HR_ADMIN)
   async hrReviewRequest(
     @Param('id') id: string,
     @Request() req,
     @Body() body: { status: FormationRequestStatus.APPROVED | FormationRequestStatus.DECLINED; hrResponse?: string },
   ) {
-    // TODO: Add RH role check guard
     return this.formationRequestsService.hrReviewRequest(id, req.user.id, body.status, body.hrResponse);
   }
 }

@@ -26,7 +26,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'drafts'>('upcoming');
 
-  const isHR = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
+  const isHR = user?.role?.name === 'Gestionnaire RH' || user?.role?.name === 'Gestionnaire RH';
 
   useEffect(() => {
     loadEvents();

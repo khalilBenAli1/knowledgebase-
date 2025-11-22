@@ -23,6 +23,8 @@ interface Analytics {
   documents: { total: number; published: number };
   chat: { totalSessions: number; totalMessages: number; averageMessagesPerSession: number };
   feedback: { total: number; useful: number; notUseful: number; usefulPercentage: number };
+  events?: { total: number; published: number; draft: number; totalRegistrations: number };
+  formations?: { total: number; pending: number; approved: number; rejected: number };
 }
 
 // Mock data for time-series charts (in production, fetch from backend)

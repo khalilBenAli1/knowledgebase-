@@ -108,7 +108,27 @@ export class FormationsController {
   @Post('catalog/extract-preview')
   @UseGuards(RolesGuard)
   @Roles(RoleName.HR_ADMIN)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/catalogs',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `preview-${randomName}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf') {
+          cb(null, true);
+        } else {
+          cb(new Error('Only PDF files are allowed for catalog upload'), false);
+        }
+      },
+    }),
+  )
   async extractPreview(@UploadedFile() file: Express.Multer.File, @Request() req) {
     const extracted = await this.catalogService.extractFormationsFromPDF(file.path, req.user.id);
     return {

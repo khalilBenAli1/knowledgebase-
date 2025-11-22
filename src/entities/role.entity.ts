@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeor
 export enum RoleName {
   USER = 'Collaborateur',
   MANAGER = 'Manager',
-  HR_ADMIN = 'Responsable RH',  // Merged both HR roles into one
+  HR_ADMIN = 'Gestionnaire RH',  // Merged both HR roles into one
   IT_ADMIN = 'IT Admin',
 }
 

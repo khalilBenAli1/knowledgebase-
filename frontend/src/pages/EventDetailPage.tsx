@@ -49,7 +49,7 @@ export default function EventDetailPage() {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [showForm, setShowForm] = useState(false);
 
-  const isHR = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
+  const isHR = user?.role?.name === 'Gestionnaire RH' || user?.role?.name === 'Gestionnaire RH';
 
   useEffect(() => {
     loadEvent();

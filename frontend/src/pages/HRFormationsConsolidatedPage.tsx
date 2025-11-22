@@ -9,7 +9,7 @@ type TabType = 'catalogue' | 'mes-demandes' | 'gestion-catalogue' | 'toutes-dema
 
 export default function HRFormationsConsolidatedPage() {
   const { user } = useAuthStore();
-  const isHR = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
+  const isHR = user?.role?.name === 'Gestionnaire RH' || user?.role?.name === 'Gestionnaire RH';
 
   const [activeTab, setActiveTab] = useState<TabType>('catalogue');
 

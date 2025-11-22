@@ -173,7 +173,7 @@ export class NotificationsService {
     const hrUsers = await this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
-      .where('role.name = :roleName', { roleName: 'Responsable RH' })
+      .where('role.name = :roleName', { roleName: 'Gestionnaire RH' })
       .getMany();
 
     // Create notification for each HR user

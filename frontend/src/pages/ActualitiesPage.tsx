@@ -31,7 +31,7 @@ export default function ActualitiesPage() {
     imageUrl: '',
   });
 
-  const isAdmin = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
+  const isAdmin = user?.role?.name === 'Gestionnaire RH' || user?.role?.name === 'Gestionnaire RH';
 
   useEffect(() => {
     loadActualities();

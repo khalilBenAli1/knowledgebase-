@@ -26,7 +26,7 @@ export default function AccueilPage() {
   const [upcomingFormations, setUpcomingFormations] = useState<Formation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const canAccessDocuments = ['Gestionnaire RH', 'Responsable RH'].includes(
+  const canAccessDocuments = ['Gestionnaire RH', 'Gestionnaire RH'].includes(
     user?.role?.name || '',
   );
 

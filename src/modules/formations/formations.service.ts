@@ -43,7 +43,7 @@ export class FormationsService {
     const formation = await this.findOne(id);
 
     // Only allow Gestionnaire RH to update
-    if (user.role.name !== 'Responsable RH') {
+    if (user.role.name !== 'Gestionnaire RH') {
       throw new ForbiddenException('Only Gestionnaire RH can update formations');
     }
 
@@ -63,7 +63,7 @@ export class FormationsService {
     const formation = await this.findOne(id);
 
     // Only allow Gestionnaire RH to delete
-    if (user.role.name !== 'Responsable RH') {
+    if (user.role.name !== 'Gestionnaire RH') {
       throw new ForbiddenException('Only Gestionnaire RH can delete formations');
     }
 

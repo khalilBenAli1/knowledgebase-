@@ -38,7 +38,7 @@ export class EventsService {
   }
 
   async findAll(user: User): Promise<Event[]> {
-    const isHR = user.role.name === 'Responsable RH' ;
+    const isHR = user.role.name === 'Gestionnaire RH' ;
 
     if (isHR) {
       // HR can see all events
@@ -66,7 +66,7 @@ export class EventsService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHR = user.role.name === 'Responsable RH' ;
+    const isHR = user.role.name === 'Gestionnaire RH' ;
 
     if (!event.published && !isHR) {
       throw new ForbiddenException('You do not have permission to view this event');
@@ -85,7 +85,7 @@ export class EventsService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHR = user.role.name === 'Responsable RH' ;
+    const isHR = user.role.name === 'Gestionnaire RH' ;
 
     if (!isHR) {
       throw new ForbiddenException('Only HR can update events');
@@ -122,7 +122,7 @@ export class EventsService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHR = user.role.name === 'Responsable RH' ;
+    const isHR = user.role.name === 'Gestionnaire RH' ;
 
     if (!isHR) {
       throw new ForbiddenException('Only HR can publish events');
@@ -156,7 +156,7 @@ export class EventsService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHR = user.role.name === 'Responsable RH' ;
+    const isHR = user.role.name === 'Gestionnaire RH' ;
 
     if (!isHR) {
       throw new ForbiddenException('Only HR can unpublish events');
@@ -174,7 +174,7 @@ export class EventsService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHR = user.role.name === 'Responsable RH' ;
+    const isHR = user.role.name === 'Gestionnaire RH' ;
 
     if (!isHR) {
       throw new ForbiddenException('Only HR can delete events');
@@ -267,7 +267,7 @@ export class EventsService {
       throw new NotFoundException('Event not found');
     }
 
-    const isHR = user.role.name === 'Responsable RH' ;
+    const isHR = user.role.name === 'Gestionnaire RH' ;
 
     if (!isHR) {
       throw new ForbiddenException('Only HR can view event statistics');

@@ -126,6 +126,7 @@ export class FormationRequestsService {
   async getUserRequests(userId: string): Promise<FormationRequest[]> {
     return this.requestsRepository.find({
       where: { requesterId: userId },
+      relations: ['formation', 'requester', 'manager'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -139,6 +140,7 @@ export class FormationRequestsService {
 
     return this.requestsRepository.find({
       where,
+      relations: ['formation', 'requester', 'manager'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -146,6 +148,7 @@ export class FormationRequestsService {
   async getRequestById(id: string, userId: string): Promise<FormationRequest> {
     const request = await this.requestsRepository.findOne({
       where: { id },
+      relations: ['formation', 'requester', 'manager'],
     });
 
     if (!request) {
@@ -167,6 +170,7 @@ export class FormationRequestsService {
   ): Promise<FormationRequest> {
     const request = await this.requestsRepository.findOne({
       where: { id: requestId },
+      relations: ['formation', 'requester', 'manager'],
     });
 
     if (!request) {
@@ -271,6 +275,7 @@ export class FormationRequestsService {
   async getHRPendingRequests(): Promise<FormationRequest[]> {
     return this.requestsRepository.find({
       where: { status: FormationRequestStatus.MANAGER_APPROVED },
+      relations: ['formation', 'requester', 'manager'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -283,6 +288,7 @@ export class FormationRequestsService {
   ): Promise<FormationRequest> {
     const request = await this.requestsRepository.findOne({
       where: { id: requestId },
+      relations: ['formation', 'requester', 'manager'],
     });
 
     if (!request) {

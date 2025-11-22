@@ -27,7 +27,7 @@ export default function FormationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  const isAdmin = ['Gestionnaire RH', 'Responsable RH', 'IT Admin'].includes(user?.role?.name || '');
+  const isAdmin = ['Gestionnaire RH', 'Gestionnaire RH', 'IT Admin'].includes(user?.role?.name || '');
 
   useEffect(() => {
     loadFormation();

@@ -9,7 +9,7 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  const isHR = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
+  const isHR = user?.role?.name === 'Gestionnaire RH';
   const isITAdmin = user?.role?.name === 'IT Admin';
   const canAccessManager = user?.role?.name === "Manager";
   const canAccessAdmin = isHR || isITAdmin;

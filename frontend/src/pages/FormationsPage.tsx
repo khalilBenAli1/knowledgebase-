@@ -42,7 +42,7 @@ export default function FormationsPage() {
   });
   const [requestingFormation, setRequestingFormation] = useState<Formation | null>(null);
 
-  const isAdmin = user?.role?.name === 'Responsable RH' || user?.role?.name === 'Gestionnaire RH';
+  const isAdmin = user?.role?.name === 'Gestionnaire RH' || user?.role?.name === 'Gestionnaire RH';
 
   useEffect(() => {
     loadFormations();

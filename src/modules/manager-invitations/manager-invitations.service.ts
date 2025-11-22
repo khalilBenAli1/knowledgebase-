@@ -29,7 +29,7 @@ export class ManagerInvitationsService {
     }
 
     // Check if user is actually a manager
-    if (manager.role.name !== 'Manager' && manager.role.name !== 'Responsable RH') {
+    if (manager.role.name !== 'Manager' && manager.role.name !== 'Gestionnaire RH') {
       throw new ForbiddenException('Only managers can invite collaborators');
     }
 
