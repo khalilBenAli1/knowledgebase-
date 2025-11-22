@@ -1,9 +1,11 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { Formation } from '../../entities/formation.entity';
 import { Document } from '../../entities/document.entity';
 import { OcrService } from '../ocr/ocr.service';
+import { LLMService } from '../llm/llm.service';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -27,6 +29,8 @@ export class FormationsCatalogService {
     @InjectRepository(Document)
     private documentsRepository: Repository<Document>,
     private ocrService: OcrService,
+    private llmService: LLMService,
+    private configService: ConfigService,
   ) {}
 
   async extractFormationsFromPDF(filePath: string, createdBy: string): Promise<ExtractedFormation[]> {
@@ -44,8 +48,8 @@ export class FormationsCatalogService {
     // Use OCR service to extract text from PDF
     const text = await this.extractTextFromPDF(filePath, createdBy);
 
-    // Parse the extracted text to identify formations
-    const formations = this.parseFormationsFromText(text);
+    // Parse the extracted text to identify formations using LLM
+    const formations = await this.parseFormationsFromText(text);
 
     this.logger.log(`Extracted ${formations.length} formations from PDF`);
     return formations;
@@ -83,38 +87,120 @@ export class FormationsCatalogService {
     }
   }
 
-  private parseFormationsFromText(text: string): ExtractedFormation[] {
+  private async parseFormationsFromText(text: string): Promise<ExtractedFormation[]> {
+    // Check if dev mode is enabled (saves tokens during testing)
+    const devModeSkipLLM = this.configService.get<string>('DEV_MODE_OCR_SKIP_LLM', 'false') === 'true';
+
+    if (devModeSkipLLM) {
+      this.logger.log('DEV MODE: Using simple regex extraction (no LLM tokens used)');
+      return this.parseFormationsWithRegex(text);
+    }
+
+    this.logger.log('Using LLM to intelligently extract formations from OCR text');
+
+    const prompt = `Tu es un expert en extraction de données de catalogues de formation.
+
+Analyse le texte OCR suivant d'un catalogue de formation et extrais UNIQUEMENT les formations professionnelles réelles.
+
+RÈGLES CRITIQUES:
+1. IGNORE complètement:
+   - Les présentations d'agence/entreprise
+   - Les pages de garde et introductions
+   - Les "--- Page Break ---" et autres marqueurs techniques
+   - Les informations générales sur l'organisme de formation
+   - Les mentions légales, contacts, etc.
+
+2. EXTRAIT SEULEMENT les formations professionnelles avec:
+   - Un titre clair de formation
+   - Une description ou des objectifs pédagogiques
+
+3. Pour chaque formation trouvée, extrait ce qui est DISPONIBLE dans le texte:
+   - title: Titre de la formation (OBLIGATOIRE)
+   - description: Description, objectifs, ou contenu (OBLIGATOIRE)
+   - duration: Durée si mentionnée (optionnel, ex: "2 jours", "14 heures")
+   - location: Lieu si mentionné (optionnel)
+   - maxParticipants: Nombre max de participants si mentionné (optionnel, nombre seulement)
+
+4. NE PAS inventer de données. Si une information n'est pas dans le texte, ne l'inclut pas.
+
+5. Retourne un JSON array avec UNIQUEMENT les formations réelles trouvées.
+
+Format de réponse STRICTEMENT:
+{
+  "formations": [
+    {
+      "title": "Titre exact de la formation",
+      "description": "Description ou objectifs",
+      "duration": "2 jours" (si disponible, sinon omets ce champ),
+      "location": "Tunis" (si disponible, sinon omets ce champ),
+      "maxParticipants": 15 (si disponible, sinon omets ce champ)
+    }
+  ]
+}
+
+TEXTE OCR:
+${text}
+
+Réponds UNIQUEMENT avec le JSON, aucun texte avant ou après.`;
+
+    try {
+      const llmResponse = await this.llmService.generateAnswer(prompt, []);
+
+      this.logger.log('LLM response received, parsing JSON');
+
+      // Extract JSON from response (LLM might wrap it in markdown code blocks)
+      let jsonText = llmResponse.trim();
+
+      // Remove markdown code blocks if present
+      if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```(?:json)?\n/, '').replace(/\n```$/, '');
+      }
+
+      const parsed = JSON.parse(jsonText);
+      const formations = parsed.formations || [];
+
+      this.logger.log(`LLM extracted ${formations.length} formations`);
+
+      // Validate each formation
+      return formations.map((f: any) => this.validateFormation(f));
+
+    } catch (error) {
+      this.logger.error('Failed to parse LLM response, falling back to empty array', error);
+      this.logger.debug('LLM response was:', error.message);
+      return [];
+    }
+  }
+
+  private parseFormationsWithRegex(text: string): ExtractedFormation[] {
     const formations: ExtractedFormation[] = [];
-
-    // Split by common section delimiters
     const sections = text.split(/\n\n+/);
-
     let currentFormation: Partial<ExtractedFormation> | null = null;
 
     for (const section of sections) {
       const trimmed = section.trim();
       if (!trimmed) continue;
 
-      // Detect formation title (usually in caps or starts with keywords)
+      // Skip page breaks and presentation sections
+      if (trimmed.includes('--- Page Break ---') ||
+          trimmed.includes('Présentation:') ||
+          trimmed.includes('À propos') ||
+          trimmed.toLowerCase().includes('académie') && trimmed.length < 200) {
+        continue;
+      }
+
+      // Detect formation title
       const titleMatch = trimmed.match(/^(?:FORMATION|Formation|TITRE|Titre|COURS|Cours)[\s:]*(.+?)$/im);
       if (titleMatch) {
-        // Save previous formation if exists
         if (currentFormation && currentFormation.title) {
           formations.push(this.validateFormation(currentFormation));
         }
-        // Start new formation
-        currentFormation = {
-          title: titleMatch[1].trim(),
-        };
+        currentFormation = { title: titleMatch[1].trim() };
         continue;
       }
 
       if (!currentFormation) {
-        // Try to extract title from first line if looks like a heading
         if (trimmed.length < 100 && trimmed.length > 5 && !trimmed.includes('.')) {
-          currentFormation = {
-            title: trimmed,
-          };
+          currentFormation = { title: trimmed };
         }
         continue;
       }
@@ -126,7 +212,6 @@ export class FormationsCatalogService {
           currentFormation.description = descMatch[1].trim();
         }
       } else if (!currentFormation.description && trimmed.length > 20) {
-        // Use as description if it's substantial text
         currentFormation.description = trimmed;
       }
 

@@ -148,9 +148,9 @@ export class ChatService {
       session = await this.createSession(userId);
     }
 
-    // Get conversation history for context (last 20 messages for better context)
+    // Get conversation history for context (last 6 messages = 3 exchanges to save tokens during testing)
     const conversationHistory = sessionId
-      ? (await this.getMessages(sessionId)).slice(-20)
+      ? (await this.getMessages(sessionId)).slice(-6)
       : [];
 
     const userMessage = this.messagesRepository.create({

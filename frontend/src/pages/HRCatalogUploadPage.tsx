@@ -73,8 +73,15 @@ export default function HRCatalogUploadPage() {
     }
   };
 
+  const isFormationComplete = (formation: ExtractedFormation): boolean => {
+    return !!(formation.title && formation.description && formation.startDate);
+  };
+
+  const incompleteFormations = extractedFormations.filter(f => !isFormationComplete(f));
+  const canImport = extractedFormations.length > 0 && incompleteFormations.length === 0;
+
   const handleUploadAndImport = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !canImport) return;
 
     if (!confirm(`Voulez-vous importer ${extractedFormations.length} formation(s) ?`)) return;
 
@@ -247,8 +254,9 @@ export default function HRCatalogUploadPage() {
               </div>
               <button
                 onClick={handleUploadAndImport}
-                disabled={importing}
+                disabled={importing || !canImport}
                 className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                title={!canImport ? `${incompleteFormations.length} formation(s) incomplète(s) - veuillez remplir tous les champs obligatoires` : ''}
               >
                 {importing ? (
                   <>
@@ -266,42 +274,67 @@ export default function HRCatalogUploadPage() {
               </button>
             </div>
 
+            {incompleteFormations.length > 0 && (
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900 border-2 border-red-200 dark:border-red-700 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <p className="text-sm text-red-800 dark:text-red-200 font-semibold">
+                    ⚠️ {incompleteFormations.length} formation(s) incomplète(s): Les champs <strong>Titre</strong>, <strong>Description</strong> et <strong>Date de début</strong> sont obligatoires!
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-4">
-              {extractedFormations.map((formation, index) => (
-                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
+              {extractedFormations.map((formation, index) => {
+                const isIncomplete = !isFormationComplete(formation);
+                return (
+                <div key={index} className={`border rounded-lg p-6 hover:shadow-md transition-shadow ${isIncomplete ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
                   {editingIndex === index && editForm ? (
                     // Edit Mode
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Titre</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                          Titre <span className="text-red-600">*</span>
+                        </label>
                         <input
                           type="text"
                           value={editForm.title}
                           onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100"
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100 ${!editForm.title ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'}`}
+                          placeholder="Titre de la formation (obligatoire)"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                          Description <span className="text-red-600">*</span>
+                        </label>
                         <textarea
                           value={editForm.description}
                           onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                           rows={4}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary resize-none dark:bg-gray-700 dark:text-gray-100"
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-biat-primary resize-none dark:bg-gray-700 dark:text-gray-100 ${!editForm.description ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'}`}
+                          placeholder="Description de la formation (obligatoire)"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Date de début</label>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Date de début <span className="text-red-600">*</span>
+                          </label>
                           <input
                             type="date"
                             value={editForm.startDate || ''}
                             onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100"
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-biat-primary dark:bg-gray-700 dark:text-gray-100 ${!editForm.startDate ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'}`}
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Date de fin</label>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Date de fin <span className="text-gray-400">(optionnel)</span>
+                          </label>
                           <input
                             type="date"
                             value={editForm.endDate || ''}
@@ -312,7 +345,9 @@ export default function HRCatalogUploadPage() {
                       </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Durée</label>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Durée <span className="text-gray-400">(optionnel)</span>
+                          </label>
                           <input
                             type="text"
                             value={editForm.duration || ''}
@@ -322,7 +357,9 @@ export default function HRCatalogUploadPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Lieu</label>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Lieu <span className="text-gray-400">(optionnel)</span>
+                          </label>
                           <input
                             type="text"
                             value={editForm.location || ''}
@@ -332,7 +369,9 @@ export default function HRCatalogUploadPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Max participants</label>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            Max participants <span className="text-gray-400">(optionnel)</span>
+                          </label>
                           <input
                             type="number"
                             value={editForm.maxParticipants || ''}
@@ -361,7 +400,23 @@ export default function HRCatalogUploadPage() {
                     // View Mode
                     <>
                       <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-lg font-bold text-biat-primary dark:text-biat-300 flex-1">{formation.title}</h3>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-biat-primary dark:text-biat-300">{formation.title}</h3>
+                            {isIncomplete && (
+                              <span className="px-2 py-1 text-xs font-semibold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 rounded">
+                                ⚠️ Incomplet
+                              </span>
+                            )}
+                          </div>
+                          {isIncomplete && (
+                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                              {!formation.startDate && '• Date de début manquante '}
+                              {!formation.title && '• Titre manquant '}
+                              {!formation.description && '• Description manquante'}
+                            </p>
+                          )}
+                        </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEditFormation(index)}
@@ -415,7 +470,8 @@ export default function HRCatalogUploadPage() {
                     </>
                   )}
                 </div>
-              ))}
+              );
+              })}
             </div>
 
             <div className="mt-6 p-4 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">

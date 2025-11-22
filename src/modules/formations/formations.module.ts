@@ -6,11 +6,13 @@ import { FormationsCatalogService } from './formations-catalog.service';
 import { Formation } from '../../entities/formation.entity';
 import { Document } from '../../entities/document.entity';
 import { OcrModule } from '../ocr/ocr.module';
+import { LLMModule } from '../llm/llm.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Formation, Document]),
     OcrModule,
+    LLMModule,
   ],
   controllers: [FormationsController],
   providers: [FormationsService, FormationsCatalogService],
