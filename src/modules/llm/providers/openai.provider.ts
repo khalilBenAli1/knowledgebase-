@@ -38,7 +38,7 @@ export class OpenAIProvider implements LLMProvider {
         model: this.config.model,
         messages,
         temperature: this.config.temperature,
-        max_tokens: this.config.maxTokens,
+        max_completion_tokens: this.config.maxTokens,
       });
 
       const content = response.choices[0]?.message?.content;
@@ -97,7 +97,7 @@ Mets à jour le résumé en français en listant uniquement les faits, demandes 
           { role: 'user', content: summaryPrompt },
         ],
         temperature: 0.2,
-        max_tokens: 250,
+        max_completion_tokens: 250,
       });
 
       const summary = response.choices[0]?.message?.content?.trim();
