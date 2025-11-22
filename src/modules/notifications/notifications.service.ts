@@ -120,7 +120,7 @@ export class NotificationsService {
       'Invitation de manager',
       `${managerName} vous a invité à rejoindre son équipe`,
       { invitationId, managerName },
-      `/manager?tab=invitations`, // Route to manager dashboard, invitations tab
+      `/manager?tab=received-invitations`, // Route to manager dashboard, received invitations tab
     );
   }
 

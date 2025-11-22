@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException, Logger } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -9,10 +9,13 @@ import { Formation } from '../../entities/formation.entity';
 import { RoleName } from '../../entities/role.entity';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import * as fs from 'fs';
 
 @Controller('api/formations')
 @UseGuards(JwtAuthGuard)
 export class FormationsController {
+  private readonly logger = new Logger(FormationsController.name);
+
   constructor(
     private readonly formationsService: FormationsService,
     private readonly catalogService: FormationsCatalogService,
@@ -130,10 +133,30 @@ export class FormationsController {
     }),
   )
   async extractPreview(@UploadedFile() file: Express.Multer.File, @Request() req) {
-    const extracted = await this.catalogService.extractFormationsFromPDF(file.path, req.user.id);
-    return {
-      count: extracted.length,
-      formations: extracted,
-    };
+    try {
+      if (!file) {
+        throw new BadRequestException('No file uploaded');
+      }
+
+      const extracted = await this.catalogService.extractFormationsFromPDF(file.path, req.user.id);
+
+      // Clean up uploaded file after processing
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+
+      return {
+        count: extracted.length,
+        formations: extracted,
+      };
+    } catch (error) {
+      // Clean up file on error
+      if (file && file.path && fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+
+      this.logger.error('Failed to extract formations from catalog', error);
+      throw new BadRequestException(`Failed to extract formations: ${error.message}`);
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useAuthStore } from '../store/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 interface FormationRequest {
@@ -37,7 +38,11 @@ interface ManagerInvitation {
   id: string;
   managerId: string;
   collaboratorId: string;
-  collaborator: {
+  collaborator?: {
+    name: string;
+    email: string;
+  };
+  manager?: {
     name: string;
     email: string;
   };
@@ -48,10 +53,17 @@ interface ManagerInvitation {
 }
 
 export default function ManagerDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'requests' | 'team' | 'invitations'>('requests');
+  const { user } = useAuthStore();
+  // Get tab from URL query params (for notifications)
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab') as 'requests' | 'team' | 'sent-invitations' | 'received-invitations' | null;
+  const [activeTab, setActiveTab] = useState<'requests' | 'team' | 'sent-invitations' | 'received-invitations'>(
+    tabParam || 'requests'
+  );
   const [formationRequests, setFormationRequests] = useState<FormationRequest[]>([]);
   const [collaborators, setCollaborators] = useState<User[]>([]);
-  const [invitations, setInvitations] = useState<ManagerInvitation[]>([]);
+  const [sentInvitations, setSentInvitations] = useState<ManagerInvitation[]>([]);
+  const [receivedInvitations, setReceivedInvitations] = useState<ManagerInvitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewingRequest, setReviewingRequest] = useState<string | null>(null);
   const [reviewResponse, setReviewResponse] = useState('');
@@ -59,6 +71,8 @@ export default function ManagerDashboardPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteMessage, setInviteMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const canAccessManager = user?.role?.name === 'Manager' || user?.role?.name === 'Gestionnaire RH' || user?.role?.name === 'IT Admin';
 
   useEffect(() => {
     loadData();
@@ -71,8 +85,10 @@ export default function ManagerDashboardPage() {
         await loadFormationRequests();
       } else if (activeTab === 'team') {
         await loadCollaborators();
-      } else if (activeTab === 'invitations') {
-        await loadInvitations();
+      } else if (activeTab === 'sent-invitations') {
+        await loadSentInvitations();
+      } else if (activeTab === 'received-invitations') {
+        await loadReceivedInvitations();
       }
     } finally {
       setLoading(false);
@@ -98,20 +114,32 @@ export default function ManagerDashboardPage() {
     }
   };
 
-  const loadInvitations = async () => {
+  const loadSentInvitations = async () => {
     try {
       const response = await api.get('/manager-invitations/sent');
-      setInvitations(response.data);
+      setSentInvitations(response.data);
     } catch (error) {
-      console.error('Failed to load invitations', error);
+      console.error('Failed to load sent invitations', error);
+    }
+  };
+
+  const loadReceivedInvitations = async () => {
+    try {
+      const response = await api.get('/manager-invitations/received');
+      setReceivedInvitations(response.data);
+    } catch (error) {
+      console.error('Failed to load received invitations', error);
     }
   };
 
   const handleReviewRequest = async (requestId: string, status: 'APPROVED' | 'DECLINED') => {
     setSubmitting(true);
     try {
+      // Convert to lowercase for backend enum validation
+      const backendStatus = status === 'APPROVED' ? 'approved' : 'declined';
+
       await api.put(`/formation-requests/${requestId}/review`, {
-        status,
+        status: backendStatus,
         managerResponse: reviewResponse || undefined,
       });
       alert(status === 'APPROVED' ? 'Demande approuvée!' : 'Demande refusée');
@@ -140,7 +168,7 @@ export default function ManagerDashboardPage() {
       setShowInviteModal(false);
       setInviteEmail('');
       setInviteMessage('');
-      loadInvitations();
+      loadSentInvitations();
       loadCollaborators();
     } catch (error: any) {
       console.error('Failed to send invitation', error);
@@ -156,10 +184,27 @@ export default function ManagerDashboardPage() {
     try {
       await api.delete(`/manager-invitations/${invitationId}`);
       alert('Invitation annulée');
-      loadInvitations();
+      loadSentInvitations();
     } catch (error) {
       console.error('Failed to cancel invitation', error);
       alert('Erreur lors de l\'annulation');
+    }
+  };
+
+  const handleRespondToInvitation = async (invitationId: string, accept: boolean) => {
+    if (!confirm(accept ? 'Voulez-vous accepter cette invitation?' : 'Voulez-vous refuser cette invitation?')) return;
+
+    try {
+      await api.put(`/manager-invitations/${invitationId}/respond`, { accept });
+      alert(accept ? 'Invitation acceptée! Vous avez maintenant un manager.' : 'Invitation refusée');
+      loadReceivedInvitations();
+      // Reload collaborators if manager
+      if (canAccessManager) {
+        loadCollaborators();
+      }
+    } catch (error: any) {
+      console.error('Failed to respond to invitation', error);
+      alert(error.response?.data?.message || 'Erreur lors de la réponse à l\'invitation');
     }
   };
 
@@ -236,15 +281,27 @@ export default function ManagerDashboardPage() {
               Mon équipe ({collaborators.length})
             </button>
             <button
-              onClick={() => setActiveTab('invitations')}
+              onClick={() => setActiveTab('received-invitations')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'invitations'
+                activeTab === 'received-invitations'
                   ? 'bg-biat-primary text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
-              Invitations ({invitations.filter(i => i.status === 'pending').length})
+              Reçues ({receivedInvitations.filter(i => i.status === 'pending').length})
             </button>
+            {canAccessManager && (
+              <button
+                onClick={() => setActiveTab('sent-invitations')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'sent-invitations'
+                    ? 'bg-biat-primary text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                Envoyées ({sentInvitations.filter(i => i.status === 'pending').length})
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -454,14 +511,78 @@ export default function ManagerDashboardPage() {
             </div>
           )}
 
-          {/* Invitations Tab */}
-          {activeTab === 'invitations' && (
+          {/* Received Invitations Tab */}
+          {activeTab === 'received-invitations' && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Invitations reçues</h2>
+              </div>
+
+              {receivedInvitations.length === 0 ? (
+                <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-xl">
+                  <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Aucune invitation</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Les invitations de managers apparaîtront ici</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {receivedInvitations.map((invitation) => (
+                    <div key={invitation.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{invitation.manager?.name || 'Manager'}</h3>
+                            {getStatusBadge(invitation.status)}
+                          </div>
+                          <p className="text-gray-600 dark:text-gray-400 mb-2">{invitation.manager?.email || ''}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                            Envoyée le {new Date(invitation.createdAt).toLocaleDateString('fr-FR')}
+                          </p>
+                          {invitation.respondedAt && (
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Répondue le {new Date(invitation.respondedAt).toLocaleDateString('fr-FR')}
+                            </p>
+                          )}
+                          {invitation.message && (
+                            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
+                              <p className="text-sm text-gray-700 dark:text-gray-300">{invitation.message}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {invitation.status === 'pending' && (
+                        <div className="mt-4 flex gap-3">
+                          <button
+                            onClick={() => handleRespondToInvitation(invitation.id, true)}
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          >
+                            ✓ Accepter
+                          </button>
+                          <button
+                            onClick={() => handleRespondToInvitation(invitation.id, false)}
+                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                          >
+                            ✗ Refuser
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sent Invitations Tab */}
+          {activeTab === 'sent-invitations' && (
             <div>
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Invitations envoyées</h2>
               </div>
 
-              {invitations.length === 0 ? (
+              {sentInvitations.length === 0 ? (
                 <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-xl">
                   <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -471,15 +592,15 @@ export default function ManagerDashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {invitations.map((invitation) => (
+                  {sentInvitations.map((invitation) => (
                     <div key={invitation.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{invitation.collaborator.name}</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{invitation.collaborator?.name || 'Collaborateur'}</h3>
                             {getStatusBadge(invitation.status)}
                           </div>
-                          <p className="text-gray-600 dark:text-gray-400 mb-2">{invitation.collaborator.email}</p>
+                          <p className="text-gray-600 dark:text-gray-400 mb-2">{invitation.collaborator?.email || ''}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             Envoyée le {new Date(invitation.createdAt).toLocaleDateString('fr-FR')}
                           </p>
