@@ -41,8 +41,16 @@ export default function HRCatalogUploadPage() {
     formData.append('file', selectedFile);
 
     try {
+      // Show processing toast
+      toast('Traitement OCR en cours... Veuillez patienter (peut prendre jusqu\'à 2-3 minutes)', {
+        icon: '⏳',
+        duration: 5000,
+      });
+
+      // Increase timeout to 5 minutes for OCR processing
       const response = await api.post('/formations/catalog/extract-preview', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 300000, // 5 minutes (300 seconds)
       });
 
       setExtractedFormations(response.data.formations);
@@ -53,9 +61,13 @@ export default function HRCatalogUploadPage() {
       } else {
         toast.success(`${response.data.count} formation(s) extraite(s) avec succès!`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to extract formations', error);
-      toast.error('Erreur lors de l\'extraction. Vérifiez que le PDF contient des informations de formations.');
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Le traitement OCR prend trop de temps. Essayez avec un PDF plus petit ou contactez l\'administrateur.');
+      } else {
+        toast.error('Erreur lors de l\'extraction. Vérifiez que le PDF contient des informations de formations.');
+      }
     } finally {
       setExtracting(false);
     }
@@ -71,8 +83,10 @@ export default function HRCatalogUploadPage() {
     formData.append('file', selectedFile);
 
     try {
+      // Increase timeout for large PDF processing
       const response = await api.post('/formations/catalog/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 300000, // 5 minutes
       });
 
       toast.success(`Import terminé! ${response.data.imported} formation(s) importée(s) en mode brouillon.`, {
