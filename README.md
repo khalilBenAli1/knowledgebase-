@@ -29,8 +29,8 @@ A secure, explainable AI chatbot platform that answers employees' questions abou
 - React Router for navigation
 
 **AI/ML:**
-- Ollama for local LLM inference (or compatible endpoint)
-- Open-source embedding models
+- OpenAI GPT-5 Nano (Chat Completions API)
+- OpenAI `text-embedding-3-small` embeddings
 - RAG pipeline with vector similarity search
 
 **Document Processing:**
@@ -43,22 +43,13 @@ Before starting, ensure you have:
 
 - Node.js 18+ and npm
 - PostgreSQL 14+
-- Ollama installed locally (or access to compatible LLM endpoint)
+- An OpenAI account with access to ChatGPT 5 Nano and embeddings (`text-embedding-3-small`)
 
-### Installing Ollama
+### OpenAI Setup
 
-Download and install from [ollama.ai](https://ollama.ai)
-
-Pull required models:
-```bash
-ollama pull llama3
-ollama pull sentence-transformers/all-MiniLM-L6-v2
-```
-
-Start Ollama server:
-```bash
-ollama serve
-```
+1. Create an API key on [platform.openai.com](https://platform.openai.com/).
+2. Confirm the account can use `gpt-5-nano` and `text-embedding-3-small`.
+3. Store the key securely (e.g., in `.env` as `OPENAI_API_KEY`) and restrict outbound traffic to `https://api.openai.com`.
 
 ## 🚀 Installation
 
@@ -115,16 +106,16 @@ UPLOAD_DIR=./uploads
 # RAG Configuration
 CHUNK_SIZE=800
 CHUNK_OVERLAP=150
-EMBEDDING_PROVIDER=ollama
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small
 TOP_K_RESULTS=5
 
 # LLM Configuration
-LLM_PROVIDER=ollama
-LLM_ENDPOINT=http://localhost:11434
-LLM_MODEL=llama3
+LLM_ENDPOINT=https://api.openai.com/v1
+LLM_MODEL=gpt-5-nano
 LLM_TEMPERATURE=0.3
 LLM_MAX_TOKENS=1000
+OPENAI_API_KEY=sk-your-key
 ```
 
 ### 4. Database Migration
@@ -325,9 +316,10 @@ Key environment variables:
 | JWT_SECRET | Secret for JWT signing | changeme |
 | CHUNK_SIZE | Characters per chunk | 800 |
 | CHUNK_OVERLAP | Overlap between chunks | 150 |
-| LLM_ENDPOINT | Ollama or LLM API endpoint | http://localhost:11434 |
-| LLM_MODEL | Model to use for generation | llama3 |
-| EMBEDDING_MODEL | Model for embeddings | all-MiniLM-L6-v2 |
+| LLM_ENDPOINT | OpenAI API endpoint | https://api.openai.com/v1 |
+| LLM_MODEL | Model to use for generation | gpt-5-nano |
+| EMBEDDING_MODEL | Model for embeddings | text-embedding-3-small |
+| OPENAI_API_KEY | API key for OpenAI requests | (none) |
 | TOP_K_RESULTS | Number of chunks to retrieve | 5 |
 
 ## 🐛 Troubleshooting
@@ -338,9 +330,9 @@ Key environment variables:
 - Ensure pgvector extension is installed
 
 ### LLM Not Responding
-- Verify Ollama is running: `ollama list`
-- Check LLM_ENDPOINT is correct
-- Ensure models are pulled: `ollama pull llama3`
+- Verify `OPENAI_API_KEY` is configured and valid
+- Check `LLM_ENDPOINT` (default `https://api.openai.com/v1`)
+- Confirm your OpenAI account has access to `gpt-5-nano`
 
 ### Frontend Can't Reach Backend
 - Check backend is running on PORT 3000
@@ -350,7 +342,7 @@ Key environment variables:
 ### Document Processing Fails
 - Check file format (PDF or DOCX only)
 - Verify file size under MAX_FILE_SIZE
-- Check Ollama embedding model is available
+- Confirm the embedding model (`text-embedding-3-small`) is available in your OpenAI subscription
 - Review logs for parsing errors
 
 ## 📈 Performance Tuning

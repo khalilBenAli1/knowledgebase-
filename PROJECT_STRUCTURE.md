@@ -95,7 +95,7 @@ assurances-biat-ai-assistant/
 │       │   ├── interfaces/
 │       │   │   └── llm-provider.interface.ts
 │       │   └── providers/
-│       │       └── ollama.provider.ts  # Ollama implementation
+│       │       └── openai.provider.ts  # OpenAI implementation
 │       │
 │       ├── rag/                        # Retrieval-Augmented Generation
 │       │   ├── rag.module.ts

@@ -132,10 +132,12 @@ npm run dev
 ```
 - Frontend will run on: `http://localhost:5173`
 
-### 3. Start Ollama (if not running)
-```bash
-ollama serve
-```
+### 3. Vérifier l'accès OpenAI
+- Assurez-vous que `OPENAI_API_KEY` est défini dans `.env`
+- Test rapide :  
+  ```bash
+  curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"
+  ```
 
 ### 4. Login
 - Navigate to: `http://localhost:5173`

@@ -37,17 +37,18 @@ MAX_FILE_SIZE=10485760
 # RAG
 CHUNK_SIZE=800
 CHUNK_OVERLAP=150
-EMBEDDING_PROVIDER=ollama
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small
 SIMILARITY_THRESHOLD=0.7
 TOP_K_RESULTS=5
 
 # LLM
-LLM_PROVIDER=ollama
-LLM_ENDPOINT=http://ollama-server:11434
-LLM_MODEL=llama3
+LLM_PROVIDER=openai
+LLM_ENDPOINT=https://api.openai.com/v1
+LLM_MODEL=gpt-5-nano
 LLM_TEMPERATURE=0.3
 LLM_MAX_TOKENS=1000
+OPENAI_API_KEY=your_openai_api_key
 
 # Logging
 LOG_LEVEL=info
@@ -157,12 +158,11 @@ sudo apt-get install -y nodejs
 sudo apt-get install postgresql postgresql-contrib
 ```
 
-#### Install Ollama
-```bash
-curl https://ollama.ai/install.sh | sh
-ollama pull llama3
-ollama pull sentence-transformers/all-MiniLM-L6-v2
-```
+#### Configure OpenAI Access
+1. Create or reuse an API key from [platform.openai.com](https://platform.openai.com/).
+2. Ensure the account has access to `gpt-5-nano` and `text-embedding-3-small`.
+3. Store the key securely on the server (e.g., `/etc/assurances-biat/.env`) and export `OPENAI_API_KEY`.
+4. Restrict outbound network access so only `https://api.openai.com` is reachable if possible.
 
 #### Deploy Application
 ```bash
@@ -244,13 +244,6 @@ services:
     networks:
       - biat-network
 
-  ollama:
-    image: ollama/ollama
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - biat-network
-
   app:
     build: .
     ports:
@@ -258,11 +251,13 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/assurances_biat
-      - LLM_ENDPOINT=http://ollama:11434
+      - LLM_ENDPOINT=https://api.openai.com/v1
+      - LLM_MODEL=gpt-5-nano
+      - EMBEDDING_MODEL=text-embedding-3-small
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - db
-      - ollama
     volumes:
       - uploads:/app/uploads
     networks:
@@ -270,7 +265,6 @@ services:
 
 volumes:
   postgres_data:
-  ollama_data:
   uploads:
 
 networks:
@@ -471,7 +465,7 @@ REINDEX DATABASE assurances_biat_prod;
 1. Check logs: `pm2 logs assurances-biat`
 2. Verify environment variables
 3. Check database connectivity
-4. Verify Ollama is running
+4. Confirm `OPENAI_API_KEY` is configured and the server can reach https://api.openai.com
 
 ### High Memory Usage
 

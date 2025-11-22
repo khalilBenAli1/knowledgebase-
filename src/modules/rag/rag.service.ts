@@ -10,6 +10,8 @@ export interface SearchResult {
   chunk: DocumentChunk;
   document: Document;
   similarity: number;
+  originalSimilarity?: number;
+  isAboveThreshold?: boolean;
 }
 
 export interface RetrievalResult {
@@ -22,6 +24,7 @@ export interface RetrievalResult {
     heading?: string;
     chunkId: string;
   }>;
+  hasRelevantContext: boolean;
 }
 
 @Injectable()
@@ -214,6 +217,8 @@ export class RagService {
           chunk,
           document: chunk.document,
           similarity,
+          originalSimilarity: similarity,
+          isAboveThreshold: false,
         };
       } catch (error) {
         this.logger.warn(`Failed to calculate similarity for chunk ${chunk.id}: ${error.message}`);
@@ -221,6 +226,8 @@ export class RagService {
           chunk,
           document: chunk.document,
           similarity: 0,
+          originalSimilarity: 0,
+          isAboveThreshold: false,
         };
       }
     });
@@ -267,8 +274,9 @@ export class RagService {
 
     // Filter by threshold (using original similarity, not boosted)
     const filtered = boostedResults
-      .filter((result) => (result.originalSimilarity || result.similarity) >= threshold)
-      .slice(0, topK);
+      .filter((result) => (result.originalSimilarity ?? result.similarity) >= threshold)
+      .slice(0, topK)
+      .map(result => ({ ...result, isAboveThreshold: true }));
 
     this.logger.log(
       `Found ${filtered.length} chunks above threshold ${threshold} ` +
@@ -309,6 +317,8 @@ export class RagService {
       chunkId: result.chunk.id,
     }));
 
-    return { context, sources };
+    const hasRelevantContext = searchResults.some(result => result.isAboveThreshold);
+
+    return { context, sources, hasRelevantContext };
   }
 }

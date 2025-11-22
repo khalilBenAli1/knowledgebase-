@@ -85,6 +85,41 @@ export class ChatService {
   }
 
   /**
+   * Normalize user questions for better retrieval (handles fillers like "c'est quoi")
+   */
+  private normalizeQuestion(question: string): string {
+    const trimmed = question.trim();
+    const replacements = [
+      /^(c['’]?\s*(?:est-ce|est)?\s*(?:que|quoi)\s+)/i,
+      /^qu['’]est-ce\s+que\s+/i,
+    ];
+
+    let normalized = trimmed;
+    for (const pattern of replacements) {
+      normalized = normalized.replace(pattern, '').trim();
+    }
+
+    return normalized.length > 0 ? normalized : trimmed;
+  }
+
+  private async updateSessionSummary(session: ChatSession, question: string, answer: string): Promise<void> {
+    try {
+      const summary = await this.llmService.summarizeConversation(session.contextSummary || null, question, answer);
+      session.contextSummary = summary;
+      await this.sessionsRepository.save(session);
+    } catch (error) {
+      this.logger.warn(`Failed to update session summary for ${session.id}: ${error.message}`);
+    }
+  }
+
+  private buildNoDataMessage(): string {
+    return [
+      "Je ne trouve aucune information officielle correspondant à votre demande dans les documents internes publiés.",
+      "Pouvez-vous préciser votre question ou vérifier si cette thématique est couverte par un autre référentiel ?",
+    ].join(' ');
+  }
+
+  /**
    * Detect if user is asking about formations
    */
   private isFormationQuery(message: string): boolean {
@@ -168,6 +203,7 @@ export class ChatService {
     let answer: string;
     let sources: any[] = [];
     let formations: Formation[] = [];
+    const conversationSummary = session.contextSummary || null;
 
     // Handle casual messages without searching documents
     if (this.isCasualMessage(question)) {
@@ -194,12 +230,13 @@ export class ChatService {
 
       // Search both the Formation DB AND the documents
       formations = await this.searchFormations(question);
-      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(question);
+      const normalizedQuestion = this.normalizeQuestion(question);
+      const { context, sources: retrievedSources, hasRelevantContext } = await this.ragService.retrieveContext(normalizedQuestion);
 
       this.logger.log(`Found ${formations.length} formations in DB and ${retrievedSources.length} relevant document chunks`);
 
       // If we have document context, use RAG to answer
-      if (retrievedSources.length > 0 && context.length > 0) {
+      if (retrievedSources.length > 0 && context.length > 0 && hasRelevantContext) {
         sources = retrievedSources;
 
         // Convert conversation history to LLM format
@@ -209,7 +246,10 @@ export class ChatService {
         }));
 
         // Use LLM to answer based on documents
-        answer = await this.llmService.generateAnswer(question, context, historyForLLM);
+        answer = await this.llmService.generateAnswer(question, context, {
+          conversationSummary,
+          conversationHistory: historyForLLM,
+        });
 
         // If we also have formations in DB, append them with descriptions
         if (formations.length > 0) {
@@ -255,7 +295,7 @@ export class ChatService {
       }
       // Nothing found
       else {
-        answer = "Aucune formation trouvée dans le catalogue ni dans les documents.";
+        answer = this.buildNoDataMessage();
       }
     }
     // Regular RAG query
@@ -276,17 +316,19 @@ export class ChatService {
         }
       }
 
+      const normalizedQuery = this.normalizeQuestion(enhancedQuery);
+
       // Expand query with semantic variations for better matching
-      const expandedQuery = this.expandQueryWithSynonyms(enhancedQuery);
+      const expandedQuery = this.expandQueryWithSynonyms(normalizedQuery);
       this.logger.debug(`Expanded query: "${expandedQuery}"`);
 
-      const { context, sources: retrievedSources } = await this.ragService.retrieveContext(expandedQuery);
+      const { context, sources: retrievedSources, hasRelevantContext } = await this.ragService.retrieveContext(expandedQuery);
       sources = retrievedSources;
 
       this.logger.log(`Retrieved ${sources.length} relevant chunks`);
 
-      if (sources.length === 0 || context.length === 0) {
-        answer = "Je n'ai pas cette information dans mes documents.";
+      if (!hasRelevantContext || sources.length === 0 || context.length === 0) {
+        answer = this.buildNoDataMessage();
         this.logger.warn(`No context found for question: ${question}`);
       } else {
         // Convert conversation history to LLM format
@@ -296,7 +338,10 @@ export class ChatService {
         }));
 
         // Pass conversation history to LLM for better context awareness
-        answer = await this.llmService.generateAnswer(question, context, historyForLLM);
+        answer = await this.llmService.generateAnswer(question, context, {
+          conversationSummary,
+          conversationHistory: historyForLLM,
+        });
       }
     }
 
@@ -325,6 +370,10 @@ export class ChatService {
     if (!session.title || session.title === 'New Chat Session') {
       session.title = question.substring(0, 100);
       await this.sessionsRepository.save(session);
+    }
+
+    if (!this.isCasualMessage(question)) {
+      await this.updateSessionSummary(session, question, answer);
     }
 
     return assistantMessage;

@@ -6,22 +6,14 @@ Get the Assurances BIAT AI Assistant running in under 10 minutes!
 
 ✅ Node.js 18+ installed
 ✅ PostgreSQL 14+ installed
-✅ Ollama installed and running
+✅ OpenAI API key with access to ChatGPT 5 Nano + embeddings
 
-## Step 1: Install Ollama & Models (5 minutes)
+## Step 1: Configure OpenAI (5 minutes)
 
-```bash
-# Install Ollama from https://ollama.ai
-# Or use:
-curl https://ollama.ai/install.sh | sh
-
-# Pull required models
-ollama pull llama3
-ollama pull sentence-transformers/all-MiniLM-L6-v2
-
-# Start Ollama server
-ollama serve
-```
+1. Créez un API key sur [platform.openai.com](https://platform.openai.com/).
+2. Vérifiez l'accès aux modèles `gpt-5-nano` et `text-embedding-3-small`.
+3. Ajoutez la clé à votre `.env` (`OPENAI_API_KEY=sk-...`).
+4. (Optionnel) Exportez la clé dans votre terminal: `export OPENAI_API_KEY=sk-...`.
 
 ## Step 2: Setup Database (2 minutes)
 
@@ -127,11 +119,11 @@ VALUES (
 - Verify DATABASE_URL in `.env`
 
 ### "LLM endpoint not responding"
-- Check Ollama is running: `ollama list`
-- Verify it's on port 11434: `curl http://localhost:11434`
+- Verify `OPENAI_API_KEY` is set in `.env`
+- Test connectivity: `curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"`
 
 ### "Document processing stuck"
-- Check Ollama has the embedding model: `ollama list | grep MiniLM`
+- Confirm the embedding model name (`text-embedding-3-small`) is correct
 - Check backend logs for errors
 
 ### "Frontend won't load"

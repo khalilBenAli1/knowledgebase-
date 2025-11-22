@@ -38,12 +38,22 @@ export class ChatMessage {
 
   @Column({ type: 'jsonb', default: [] })
   sourceRefs: Array<{
-    documentId: string;
-    documentName: string;
+    type?: string;
+    documentId?: string;
+    documentName?: string;
     page?: number;
     article?: string;
     heading?: string;
     chunkId?: string;
+    cards?: Array<{
+      id: string;
+      title: string;
+      department?: string | null;
+      tags?: string[];
+      category?: string | null;
+      updatedAt?: Date;
+    }>;
+    [key: string]: any;
   }>;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

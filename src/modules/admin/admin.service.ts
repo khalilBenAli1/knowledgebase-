@@ -271,20 +271,35 @@ export class AdminService {
       const totalMessages = await this.messagesRepository.count();
       const totalAuditLogs = await this.auditLogsRepository.count();
 
-      // Ollama LLM status
-      const ollamaUrl = this.configService.get('OLLAMA_URL', 'http://localhost:11434');
-      let ollamaStatus = 'offline';
-      let ollamaModels = [];
+      // OpenAI LLM status
+      const llmProvider = 'openai';
+      const llmUrl = this.configService.get('LLM_ENDPOINT', 'https://api.openai.com/v1');
+      const llmModel = this.configService.get('LLM_MODEL', 'gpt-5-nano');
+      const apiKey = this.configService.get('OPENAI_API_KEY');
+      let llmStatus = 'offline';
+      let llmModels: Array<{ name: string; size?: number; modified?: string }> = [];
 
-      try {
-        const response = await fetch(`${ollamaUrl}/api/tags`);
-        if (response.ok) {
-          const data = await response.json();
-          ollamaStatus = 'online';
-          ollamaModels = data.models || [];
+      if (!apiKey) {
+        llmStatus = 'missing_api_key';
+      } else {
+        try {
+          const response = await fetch(`${llmUrl}/models`, {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            llmStatus = 'online';
+            llmModels = (data.data || []).map((model: any) => ({
+              name: model.id,
+              modified: model?.created ? new Date(model.created * 1000).toISOString() : undefined,
+              size: model?.size,
+            }));
+          } else {
+            llmStatus = `error_${response.status}`;
+          }
+        } catch (error) {
+          llmStatus = 'offline';
         }
-      } catch (error) {
-        ollamaStatus = 'offline';
       }
 
       // Calculate average response time from recent messages
@@ -305,13 +320,11 @@ export class AdminService {
           auditLogs: totalAuditLogs,
         },
         llm: {
-          status: ollamaStatus,
-          url: ollamaUrl,
-          models: ollamaModels.map((m: any) => ({
-            name: m.name,
-            size: m.size,
-            modified: m.modified_at,
-          })),
+          provider: llmProvider,
+          status: llmStatus,
+          url: llmUrl,
+          model: llmModel,
+          models: llmModels,
         },
         performance: {
           recentMessagesCount: recentMessages.length,

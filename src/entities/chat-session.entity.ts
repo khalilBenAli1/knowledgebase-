@@ -24,4 +24,7 @@ export class ChatSession {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  contextSummary: string | null;
 }

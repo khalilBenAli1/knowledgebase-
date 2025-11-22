@@ -23,9 +23,9 @@ This guide explains all the new features implemented and how to integrate them i
    - LLM receives context for better responses
    - Each session remembers previous interactions
 
-2. **✓ Unified Prompt Across Providers**
-   - Ollama and Groq now use the same prompt
-   - Consistent responses regardless of provider
+2. **✓ Prompt optimisé pour OpenAI**
+   - GPT-5 Nano applique un prompt unique aligné sur les règles BIAT
+   - Réponses cohérentes et sans digression
 
 3. **✓ Improved OCR with Cloud Service**
    - New OCR.space integration for better accuracy
@@ -313,7 +313,7 @@ APP_URL=http://localhost:3000
 OCR_API_KEY=your-ocr-space-api-key  # Get free key from https://ocr.space/ocrapi
 
 # Existing variables (keep as is)
-LLM_PROVIDER=ollama  # or groq
+LLM_PROVIDER=openai
 LLM_ENDPOINT=http://localhost:11434
 LLM_MODEL=llama3
 # ... other existing vars
@@ -605,4 +605,3 @@ curl -X POST http://localhost:3000/api/ocr/extract-formations/DOCUMENT_ID \
 **Generated**: ${new Date().toISOString()}
 **Version**: 2.0
 **Author**: Claude Code Assistant
-

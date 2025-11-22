@@ -89,6 +89,7 @@ describe('RagService', () => {
       expect(result.context).toHaveLength(1);
       expect(result.sources).toHaveLength(1);
       expect(result.sources[0].documentName).toBe('Document 1');
+      expect(result.hasRelevantContext).toBe(true);
       expect(llmService.embed).toHaveBeenCalledWith('test query');
     });
   });

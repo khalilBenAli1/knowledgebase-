@@ -3,9 +3,15 @@ export interface ConversationMessage {
   content: string;
 }
 
+export interface LLMGenerationOptions {
+  conversationSummary?: string | null;
+  conversationHistory?: ConversationMessage[];
+}
+
 export interface LLMProvider {
-  generateAnswer(prompt: string, context: string[], conversationHistory?: ConversationMessage[]): Promise<string>;
+  generateAnswer(prompt: string, context: string[], options?: LLMGenerationOptions): Promise<string>;
   embed(text: string): Promise<number[]>;
+  summarizeConversation(previousSummary: string | null, question: string, answer: string): Promise<string>;
 }
 
 export interface LLMConfig {

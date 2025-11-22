@@ -11,12 +11,14 @@ interface SystemStatus {
     auditLogs: number;
   };
   llm: {
+    provider?: string;
     status: string;
     url: string;
+    model?: string;
     models: Array<{
       name: string;
-      size: number;
-      modified: string;
+      size?: number;
+      modified?: string;
     }>;
   };
   performance: {
@@ -49,7 +51,8 @@ export default function SystemStatusPage() {
     }
   };
 
-  const formatBytes = (bytes: number) => {
+  const formatBytes = (bytes?: number) => {
+    if (bytes === undefined || bytes === null) return 'N/A';
     if (bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
@@ -93,7 +96,7 @@ export default function SystemStatusPage() {
               <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
-              Statut du LLM (Ollama)
+              Statut du LLM ({status.llm.provider || 'N/A'})
             </h2>
             <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
               status.llm.status === 'online'
@@ -106,26 +109,35 @@ export default function SystemStatusPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-gray-400">URL Ollama</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Endpoint LLM</p>
               <p className="font-mono text-sm text-biat-primary dark:text-biat-300">{status.llm.url}</p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Modèles chargés</p>
-              <p className="text-2xl font-bold text-biat-primary dark:text-biat-300">{status.llm.models.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Modèle configuré</p>
+              <p className="text-lg font-bold text-biat-primary dark:text-biat-300">{status.llm.model || 'Non défini'}</p>
             </div>
           </div>
 
           {status.llm.models.length > 0 && (
             <div>
-              <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Modèles disponibles:</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300">Modèles disponibles (top 5)</h3>
+                {status.llm.models.length > 5 && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {status.llm.models.length - 5} modèles supplémentaires non affichés
+                  </span>
+                )}
+              </div>
               <div className="space-y-2">
-                {status.llm.models.map((model, index) => (
+                {status.llm.models.slice(0, 5).map((model, index) => (
                   <div key={index} className="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
                     <div>
                       <p className="font-medium text-biat-secondary dark:text-gray-200">{model.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Modifié: {new Date(model.modified).toLocaleString('fr-FR')}
-                      </p>
+                      {model.modified && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Modifié: {new Date(model.modified).toLocaleString('fr-FR')}
+                        </p>
+                      )}
                     </div>
                     <span className="text-sm font-mono text-gray-600 dark:text-gray-400">{formatBytes(model.size)}</span>
                   </div>
