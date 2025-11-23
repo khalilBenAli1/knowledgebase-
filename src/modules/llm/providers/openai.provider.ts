@@ -38,7 +38,6 @@ export class OpenAIProvider implements LLMProvider {
         model: this.config.model,
         messages,
         max_completion_tokens: options?.maxTokens || this.config.maxTokens,
-        temperature: options?.temperature ?? this.config.temperature,
       };
 
       const response = await this.client.chat.completions.create(payload);

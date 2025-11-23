@@ -166,10 +166,9 @@ JSON:`;
 
     try {
       // Use significantly more tokens for catalog extraction (8000 tokens)
-      // and higher temperature for better creativity in parsing
+      // to allow the LLM to read and extract all formations from large catalogs
       const llmResponse = await this.llmService.generateAnswer(prompt, [], {
         maxTokens: 8000,
-        temperature: 0.2, // Low temperature for precise extraction
       });
 
       this.logger.log('LLM response received, parsing JSON');
