@@ -6,6 +6,8 @@ export interface ConversationMessage {
 export interface LLMGenerationOptions {
   conversationSummary?: string | null;
   conversationHistory?: ConversationMessage[];
+  maxTokens?: number; // Override max tokens for specific tasks
+  temperature?: number; // Override temperature for specific tasks
 }
 
 export interface LLMProvider {

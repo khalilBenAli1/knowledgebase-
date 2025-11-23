@@ -98,53 +98,79 @@ export class FormationsCatalogService {
 
     this.logger.log('Using LLM to intelligently extract formations from OCR text');
 
-    const prompt = `Tu es un expert en extraction de données de catalogues de formation.
+    const prompt = `Tu es un expert en extraction de données de catalogues de formation professionnelle.
 
-Analyse le texte OCR suivant d'un catalogue de formation et extrais UNIQUEMENT les formations professionnelles réelles.
+MISSION: Analyse le texte OCR ci-dessous (extrait d'un catalogue PDF de formations) et extrais TOUTES les formations professionnelles de manière PRÉCISE et COMPLÈTE.
 
-RÈGLES CRITIQUES:
-1. IGNORE complètement:
-   - Les présentations d'agence/entreprise
-   - Les pages de garde et introductions
-   - Les "--- Page Break ---" et autres marqueurs techniques
-   - Les informations générales sur l'organisme de formation
-   - Les mentions légales, contacts, etc.
+RÈGLES D'EXTRACTION:
 
-2. EXTRAIT SEULEMENT les formations professionnelles avec:
-   - Un titre clair de formation
-   - Une description ou des objectifs pédagogiques
+1. IGNORE COMPLÈTEMENT:
+   - Les pages de présentation de l'organisme de formation
+   - Les pages de garde, sommaires, index
+   - Les "--- Page Break ---" et marqueurs techniques
+   - Les mentions légales, contacts, informations générales
+   - Les textes publicitaires ou promotionnels
 
-3. Pour chaque formation trouvée, extrait ce qui est DISPONIBLE dans le texte:
-   - title: Titre de la formation (OBLIGATOIRE)
-   - description: Description, objectifs, ou contenu (OBLIGATOIRE)
-   - duration: Durée si mentionnée (optionnel, ex: "2 jours", "14 heures")
-   - location: Lieu si mentionné (optionnel)
-   - maxParticipants: Nombre max de participants si mentionné (optionnel, nombre seulement)
+2. EXTRAIT CHAQUE FORMATION avec le MAXIMUM de détails disponibles:
+   - title: Le titre EXACT et COMPLET de la formation (OBLIGATOIRE)
+   - description: La description détaillée incluant objectifs, contenu, programme, compétences acquises (OBLIGATOIRE - sois généreux, inclus tous les détails)
+   - duration: La durée exacte si mentionnée (ex: "2 jours", "14 heures", "3 mois")
+   - location: Le lieu si mentionné (ex: "Tunis", "En ligne", "Siège social")
+   - maxParticipants: Le nombre maximum de participants (nombre uniquement)
+   - startDate: La date de début si mentionnée (format: "YYYY-MM-DD")
+   - endDate: La date de fin si mentionnée (format: "YYYY-MM-DD")
 
-4. NE PAS inventer de données. Si une information n'est pas dans le texte, ne l'inclut pas.
+3. INDICES DE DÉTECTION D'UNE FORMATION:
+   - Titre en gras ou en majuscules
+   - Mots-clés: "Formation", "Stage", "Atelier", "Certification", "Cours", "Séminaire"
+   - Présence d'objectifs pédagogiques
+   - Mention de durée, dates, ou programme
+   - Public cible (ex: "managers", "commerciaux", "techniciens")
 
-5. Retourne un JSON array avec UNIQUEMENT les formations réelles trouvées.
+4. QUALITÉ DE L'EXTRACTION:
+   - Sois PRÉCIS: copie les titres et descriptions EXACTEMENT comme dans le texte
+   - Sois COMPLET: extrais TOUTES les formations du catalogue, même si elles sont brèves
+   - NE PAS inventer de données - si une info n'existe pas, omets le champ
+   - Si une formation semble incomplète, extrais quand même ce qui est disponible
 
-Format de réponse STRICTEMENT:
+5. GESTION DES CAS DIFFICILES:
+   - Si le texte OCR est mal formaté, utilise le contexte pour détecter les formations
+   - Si plusieurs formations sont regroupées, sépare-les clairement
+   - Si une formation n'a pas de titre explicite mais a du contenu clair, crée un titre descriptif basé sur le contenu
+
+Format de réponse JSON STRICTEMENT:
 {
   "formations": [
     {
-      "title": "Titre exact de la formation",
-      "description": "Description ou objectifs",
-      "duration": "2 jours" (si disponible, sinon omets ce champ),
-      "location": "Tunis" (si disponible, sinon omets ce champ),
-      "maxParticipants": 15 (si disponible, sinon omets ce champ)
+      "title": "Titre complet et exact de la formation",
+      "description": "Description détaillée avec objectifs, contenu, programme, compétences...",
+      "duration": "2 jours",
+      "location": "Tunis",
+      "maxParticipants": 15,
+      "startDate": "2024-06-15",
+      "endDate": "2024-06-16"
     }
   ]
 }
 
-TEXTE OCR:
+IMPORTANT:
+- Lis TOUT le texte attentivement
+- N'omets AUCUNE formation
+- Sois généreux avec les descriptions (inclus tous les détails disponibles)
+- Réponds UNIQUEMENT avec le JSON valide, sans texte avant ou après
+
+TEXTE OCR DU CATALOGUE:
 ${text}
 
-Réponds UNIQUEMENT avec le JSON, aucun texte avant ou après.`;
+JSON:`;
 
     try {
-      const llmResponse = await this.llmService.generateAnswer(prompt, []);
+      // Use significantly more tokens for catalog extraction (8000 tokens)
+      // and higher temperature for better creativity in parsing
+      const llmResponse = await this.llmService.generateAnswer(prompt, [], {
+        maxTokens: 8000,
+        temperature: 0.2, // Low temperature for precise extraction
+      });
 
       this.logger.log('LLM response received, parsing JSON');
 
