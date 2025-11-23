@@ -138,10 +138,10 @@ export class AdminService {
     // Get sessions per day for last 7 days
     const sessionsPerDay = await this.sessionsRepository
       .createQueryBuilder('session')
-      .select('DATE(session.createdAt)', 'date')
+      .select('DATE(session.startedAt)', 'date')
       .addSelect('COUNT(*)', 'count')
-      .where('session.createdAt >= :sevenDaysAgo', { sevenDaysAgo })
-      .groupBy('DATE(session.createdAt)')
+      .where('session.startedAt >= :sevenDaysAgo', { sevenDaysAgo })
+      .groupBy('DATE(session.startedAt)')
       .orderBy('date', 'ASC')
       .getRawMany();
 
