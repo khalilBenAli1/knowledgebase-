@@ -7,7 +7,6 @@ dist/
 build/
 frontend/dist/
 frontend/build/
-frontend/public/pdf.worker.min.js
 
 # Environment variables
 .env

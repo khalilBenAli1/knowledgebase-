@@ -16,7 +16,4 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
   },
-  optimizeDeps: {
-    exclude: ['pdfjs-dist'],
-  },
 });
