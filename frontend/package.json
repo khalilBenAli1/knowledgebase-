@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "node copy-pdf-worker.js && tsc && vite build",
+    "postinstall": "node copy-pdf-worker.js || echo 'Skipping PDF worker copy'",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",

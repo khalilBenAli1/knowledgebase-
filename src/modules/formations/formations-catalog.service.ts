@@ -281,15 +281,31 @@ Réponds UNIQUEMENT avec le JSON, aucun texte avant ou après.`;
         continue;
       }
 
-      // If no startDate is provided, set it to a date far in the future
-      // HR will need to update this before publishing
-      const startDate = extracted.startDate || new Date('2099-12-31');
+      // Convert startDate to Date object if it's a string, or use default
+      let startDate: Date;
+      if (extracted.startDate) {
+        startDate = typeof extracted.startDate === 'string'
+          ? new Date(extracted.startDate)
+          : extracted.startDate;
+      } else {
+        // If no startDate is provided, set it to a date far in the future
+        // HR will need to update this before publishing
+        startDate = new Date('2099-12-31');
+      }
+
+      // Convert endDate to Date object if it's a string
+      let endDate: Date | undefined;
+      if (extracted.endDate) {
+        endDate = typeof extracted.endDate === 'string'
+          ? new Date(extracted.endDate)
+          : extracted.endDate;
+      }
 
       const formation = this.formationsRepository.create({
         title: extracted.title,
         description: extracted.description,
         startDate: startDate,
-        endDate: extracted.endDate,
+        endDate: endDate,
         duration: extracted.duration,
         location: extracted.location,
         maxParticipants: extracted.maxParticipants,
