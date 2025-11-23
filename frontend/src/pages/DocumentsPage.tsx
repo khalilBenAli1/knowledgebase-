@@ -173,16 +173,27 @@ export default function DocumentsPage() {
         return;
       }
 
+      toast.loading('Chargement du PDF...', { id: 'pdf-load' });
+
       const response = await api.get(`/documents/${doc.id}/download`, {
         responseType: 'blob',
       });
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+
+      // Check if response is valid
+      if (!response.data || response.data.size === 0) {
+        throw new Error('Le fichier PDF est vide ou n\'existe pas');
+      }
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+
       setPdfUrl(url);
       setShowPDFViewer(true);
       setShowPreviewModal(false);
-    } catch (error) {
+      toast.success('PDF chargé!', { id: 'pdf-load' });
+    } catch (error: any) {
       console.error('Failed to load PDF', error);
-      toast.error('Erreur lors du chargement du PDF');
+      toast.error(error.response?.data?.message || error.message || 'Erreur lors du chargement du PDF', { id: 'pdf-load' });
     }
   };
 

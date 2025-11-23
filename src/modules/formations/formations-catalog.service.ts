@@ -281,10 +281,14 @@ Réponds UNIQUEMENT avec le JSON, aucun texte avant ou après.`;
         continue;
       }
 
+      // If no startDate is provided, set it to a date far in the future
+      // HR will need to update this before publishing
+      const startDate = extracted.startDate || new Date('2099-12-31');
+
       const formation = this.formationsRepository.create({
         title: extracted.title,
         description: extracted.description,
-        startDate: extracted.startDate,
+        startDate: startDate,
         endDate: extracted.endDate,
         duration: extracted.duration,
         location: extracted.location,
@@ -295,7 +299,7 @@ Réponds UNIQUEMENT avec le JSON, aucun texte avant ou après.`;
 
       const saved = await this.formationsRepository.save(formation);
       imported.push(saved);
-      this.logger.log(`Imported formation: ${saved.title}`);
+      this.logger.log(`Imported formation: ${saved.title} (startDate: ${startDate.toISOString().split('T')[0]})`);
     }
 
     return imported;

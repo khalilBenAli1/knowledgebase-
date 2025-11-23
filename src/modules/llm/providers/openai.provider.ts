@@ -69,7 +69,7 @@ export class OpenAIProvider implements LLMProvider {
     try {
       const embeddingModel = this.configService.get<string>(
         'EMBEDDING_MODEL',
-        'text-embedding-3-small',
+        'text-embedding-3-large',
       );
 
       const response = await this.client.embeddings.create({
@@ -156,12 +156,11 @@ STYLE DE RÉPONSE:
 RÈGLES DE CONTENU:
 1. Priorité à la CONCISION : ne cite que les informations directement utiles à la question.
 2. Donne l'information clé en premier, évite les détails superflus ou le contexte inutile.
-3. Traite "style vestimentaire", "dress code" et "politique vestimentaire" comme des synonymes de "code vestimentaire" sauf indication contraire.
-4. Prends en compte les fautes, abréviations, formulations orales ("c quoi", "c'est quoi", etc.) et les synonymes courants.
-5. Si les passages fournis ne permettent pas de répondre avec certitude, indique brièvement que l'information n'est pas confirmée.
-6. Lorsqu'une question concerne les formations, cite uniquement le titre et 1-2 détails clés (durée ou date).
-7. Structure avec listes courtes (maximum 5 points) quand cela améliore la clarté.
-8. Langue: toujours en français.
+3. Prends en compte les fautes, abréviations, formulations orales ("c quoi", "c'est quoi", etc.) et les synonymes courants.
+4. Si les passages fournis ne permettent pas de répondre avec certitude, indique brièvement que l'information n'est pas confirmée.
+5. Lorsqu'une question concerne les formations, cite uniquement le titre et 1-2 détails clés (durée ou date).
+6. Structure avec listes courtes (maximum 5 points) quand cela améliore la clarté.
+7. Langue: toujours en français.
 
 IMPORTANT: Réponds en maximum 100 mots sauf si la question nécessite explicitement plus de détails.`;
 

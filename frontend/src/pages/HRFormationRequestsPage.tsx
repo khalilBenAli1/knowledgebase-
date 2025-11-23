@@ -52,8 +52,8 @@ export default function HRFormationRequestsPage() {
     }
   };
 
-  const handleHRReview = async (requestId: string, status: 'APPROVED' | 'DECLINED') => {
-    if (status === 'DECLINED' && !hrResponse.trim()) {
+  const handleHRReview = async (requestId: string, status: 'approved' | 'declined') => {
+    if (status === 'declined' && !hrResponse.trim()) {
       alert('Veuillez fournir un motif de refus');
       return;
     }
@@ -64,7 +64,7 @@ export default function HRFormationRequestsPage() {
         status,
         hrResponse: hrResponse || undefined,
       });
-      alert(status === 'APPROVED' ? 'Demande approuvée!' : 'Demande refusée');
+      alert(status === 'approved' ? 'Demande approuvée!' : 'Demande refusée');
       setReviewingRequest(null);
       setHrResponse('');
       loadRequests();
@@ -193,14 +193,14 @@ export default function HRFormationRequestsPage() {
                       />
                       <div className="flex gap-2 mt-2">
                         <button
-                          onClick={() => handleHRReview(request.id, 'APPROVED')}
+                          onClick={() => handleHRReview(request.id, 'approved')}
                           disabled={submitting}
                           className="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 font-medium"
                         >
                           ✓ Approuver
                         </button>
                         <button
-                          onClick={() => handleHRReview(request.id, 'DECLINED')}
+                          onClick={() => handleHRReview(request.id, 'declined')}
                           disabled={submitting}
                           className="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 font-medium"
                         >

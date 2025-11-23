@@ -16,15 +16,18 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, onClose }) => {
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
     setLoading(false);
+    setError(null);
   }
 
   function onDocumentLoadError(error: Error) {
     console.error('Error loading PDF:', error);
     setLoading(false);
+    setError(`Erreur lors du chargement du PDF: ${error.message}`);
   }
 
   const goToPrevPage = () => {
@@ -117,28 +120,46 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, onClose }) => {
 
         {/* PDF Content */}
         <div className="flex-1 overflow-auto bg-gray-100 flex items-center justify-center p-4">
-          {loading && (
+          {loading && !error && (
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-biat-primary mx-auto mb-4"></div>
               <p className="text-gray-600">Chargement du document...</p>
             </div>
           )}
 
-          <Document
-            file={fileUrl}
-            onLoadSuccess={onDocumentLoadSuccess}
-            onLoadError={onDocumentLoadError}
-            loading={null}
-            className="flex items-center justify-center"
-          >
-            <Page
-              pageNumber={pageNumber}
-              scale={scale}
-              renderTextLayer={true}
-              renderAnnotationLayer={true}
-              className="shadow-lg"
-            />
-          </Document>
+          {error && (
+            <div className="text-center p-8 bg-red-50 dark:bg-red-900 rounded-lg">
+              <svg className="w-16 h-16 text-red-600 dark:text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">Erreur de chargement</h3>
+              <p className="text-red-700 dark:text-red-300 mb-4">{error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">URL: {fileUrl}</p>
+            </div>
+          )}
+
+          {!error && (
+            <Document
+              file={fileUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+              loading={null}
+              className="flex items-center justify-center"
+              options={{
+                cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+                cMapPacked: true,
+                standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+              }}
+            >
+              <Page
+                pageNumber={pageNumber}
+                scale={scale}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+                className="shadow-lg"
+              />
+            </Document>
+          )}
         </div>
 
         {/* Footer with navigation */}

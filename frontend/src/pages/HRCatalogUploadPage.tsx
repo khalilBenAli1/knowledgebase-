@@ -81,19 +81,18 @@ export default function HRCatalogUploadPage() {
   const canImport = extractedFormations.length > 0 && incompleteFormations.length === 0;
 
   const handleUploadAndImport = async () => {
-    if (!selectedFile || !canImport) return;
+    if (!canImport) return;
 
     if (!confirm(`Voulez-vous importer ${extractedFormations.length} formation(s) ?`)) return;
 
     setImporting(true);
-    const formData = new FormData();
-    formData.append('file', selectedFile);
 
     try {
-      // Increase timeout for large PDF processing
-      const response = await api.post('/formations/catalog/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 300000, // 5 minutes
+      // Send the already-extracted formations directly (no re-OCR needed!)
+      const response = await api.post('/formations/catalog/import-extracted', {
+        formations: extractedFormations,
+      }, {
+        timeout: 300000, // 5 minutes timeout to handle large imports
       });
 
       toast.success(`Import terminé! ${response.data.imported} formation(s) importée(s) en mode brouillon.`, {
@@ -108,7 +107,11 @@ export default function HRCatalogUploadPage() {
       setTimeout(() => navigate('/formations'), 500);
     } catch (error: any) {
       console.error('Failed to import formations', error);
-      toast.error(error.response?.data?.message || 'Erreur lors de l\'import des formations');
+      if (error.code === 'ECONNABORTED') {
+        toast.error('L\'import prend trop de temps. Contactez l\'administrateur.');
+      } else {
+        toast.error(error.response?.data?.message || 'Erreur lors de l\'import des formations');
+      }
     } finally {
       setImporting(false);
     }

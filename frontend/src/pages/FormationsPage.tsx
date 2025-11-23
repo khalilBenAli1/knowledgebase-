@@ -4,6 +4,7 @@ import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import FormationRequestModal from '../components/FormationRequestModal';
+import ImageUpload from '../components/ImageUpload';
 
 interface Formation {
   id: string;
@@ -394,30 +395,11 @@ export default function FormationsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  URL de l'image (optionnel)
-                </label>
-                <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-biat-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="https://example.com/image.jpg"
-                />
-                {formData.imageUrl && (
-                  <div className="mt-3">
-                    <img
-                      src={formData.imageUrl}
-                      alt="Aperçu"
-                      className="w-full h-48 object-cover rounded-lg"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+              <ImageUpload
+                currentImageUrl={formData.imageUrl}
+                onImageChange={(url) => setFormData({ ...formData, imageUrl: url })}
+                label="Image de la formation (optionnel)"
+              />
 
               <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button

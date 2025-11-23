@@ -108,6 +108,23 @@ export class FormationsController {
     };
   }
 
+  @Post('catalog/import-extracted')
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.HR_ADMIN)
+  async importExtracted(@Body() body: { formations: any[] }, @Request() req) {
+    try {
+      const imported = await this.catalogService.importFormations(body.formations, req.user.id);
+      return {
+        message: 'Formations imported successfully',
+        imported: imported.length,
+        formations: imported,
+      };
+    } catch (error) {
+      this.logger.error('Failed to import formations', error);
+      throw new BadRequestException(`Failed to import formations: ${error.message}`);
+    }
+  }
+
   @Post('catalog/extract-preview')
   @UseGuards(RolesGuard)
   @Roles(RoleName.HR_ADMIN)
