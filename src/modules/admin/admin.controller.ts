@@ -16,6 +16,12 @@ export class AdminController {
     return this.adminService.getAnalytics();
   }
 
+  @Get('analytics/7-day-activity')
+  @Roles(RoleName.HR_ADMIN, RoleName.IT_ADMIN)
+  getSevenDayActivity() {
+    return this.adminService.getSevenDayActivity();
+  }
+
   @Get('topics')
   @Roles(RoleName.HR_ADMIN, RoleName.IT_ADMIN)
   getMostAskedTopics() {

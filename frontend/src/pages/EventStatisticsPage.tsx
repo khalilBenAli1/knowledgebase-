@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { exportToCSV, exportToExcel, formatDateForExport } from '../utils/exportUtils';
 
 interface Statistics {
   event: {
@@ -67,7 +68,7 @@ export default function EventStatisticsPage() {
     }
   };
 
-  const exportToCSV = () => {
+  const handleExportCSV = () => {
     if (!statistics) return;
 
     const headers = ['Nom', 'Email', 'Statut', 'Date d\'inscription'];
@@ -77,11 +78,11 @@ export default function EventStatisticsPage() {
     const rows = filteredRegistrations
       .filter(reg => reg.user) // Filter out registrations without user
       .map(reg => {
-        const row = [
+        const row: (string | number)[] = [
           reg.user?.name || 'Utilisateur supprimé',
           reg.user?.email || '-',
           getStatusLabel(reg.status),
-          new Date(reg.createdAt).toLocaleDateString('fr-FR'),
+          formatDateForExport(reg.createdAt),
         ];
 
         allFieldLabels.forEach(label => {
@@ -92,17 +93,47 @@ export default function EventStatisticsPage() {
         return row;
       });
 
-    const csv = [headers, ...rows]
-      .map(row => row.map(cell => `"${cell}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `event-${statistics.event.title}-stats.csv`;
-    link.click();
+    exportToCSV({
+      headers,
+      rows,
+      filename: `event-${statistics.event.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-stats`
+    });
 
     toast.success('Export CSV réussi');
+  };
+
+  const handleExportExcel = () => {
+    if (!statistics) return;
+
+    const headers = ['Nom', 'Email', 'Statut', 'Date d\'inscription'];
+    const allFieldLabels = Object.values(statistics.fieldStatistics).map(f => f.label);
+    headers.push(...allFieldLabels);
+
+    const rows = filteredRegistrations
+      .filter(reg => reg.user) // Filter out registrations without user
+      .map(reg => {
+        const row: (string | number)[] = [
+          reg.user?.name || 'Utilisateur supprimé',
+          reg.user?.email || '-',
+          getStatusLabel(reg.status),
+          formatDateForExport(reg.createdAt),
+        ];
+
+        allFieldLabels.forEach(label => {
+          const response = reg.responses.find(r => r.fieldLabel === label);
+          row.push(response?.answer || '-');
+        });
+
+        return row;
+      });
+
+    exportToExcel({
+      headers,
+      rows,
+      filename: `event-${statistics.event.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-stats`
+    });
+
+    toast.success('Export Excel réussi');
   };
 
   const getStatusLabel = (status: string) => {
@@ -173,15 +204,28 @@ export default function EventStatisticsPage() {
                 })}
               </p>
             </div>
-            <button
-              onClick={exportToCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Exporter CSV
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                title="Exporter au format CSV"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                CSV
+              </button>
+              <button
+                onClick={handleExportExcel}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                title="Exporter au format Excel"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Excel
+              </button>
+            </div>
           </div>
 
           {/* Summary Cards */}

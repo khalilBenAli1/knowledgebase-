@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { exportToCSV, exportToExcel, formatDateForExport } from '../utils/exportUtils';
 
 interface ExtractedFormation {
   title: string;
@@ -143,6 +144,48 @@ export default function HRCatalogUploadPage() {
     }
   };
 
+  const handleExportCSV = () => {
+    const headers = ['Titre', 'Description', 'Date début', 'Date fin', 'Durée', 'Lieu', 'Max participants'];
+    const rows = extractedFormations.map(f => [
+      f.title,
+      f.description,
+      formatDateForExport(f.startDate),
+      formatDateForExport(f.endDate),
+      f.duration || '-',
+      f.location || '-',
+      f.maxParticipants || '-'
+    ]);
+
+    exportToCSV({
+      headers,
+      rows,
+      filename: `formations-extraites-${new Date().toISOString().split('T')[0]}`
+    });
+
+    toast.success('Export CSV réussi');
+  };
+
+  const handleExportExcel = () => {
+    const headers = ['Titre', 'Description', 'Date début', 'Date fin', 'Durée', 'Lieu', 'Max participants'];
+    const rows = extractedFormations.map(f => [
+      f.title,
+      f.description,
+      formatDateForExport(f.startDate),
+      formatDateForExport(f.endDate),
+      f.duration || '-',
+      f.location || '-',
+      f.maxParticipants || '-'
+    ]);
+
+    exportToExcel({
+      headers,
+      rows,
+      filename: `formations-extraites-${new Date().toISOString().split('T')[0]}`
+    });
+
+    toast.success('Export Excel réussi');
+  };
+
   return (
     <div className="h-full overflow-y-auto bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto p-6">
@@ -248,33 +291,57 @@ export default function HRCatalogUploadPage() {
         {/* Extracted Formations */}
         {extractedFormations.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                   2. Vérifiez et modifiez les formations ({extractedFormations.length})
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Vous pouvez modifier les informations avant l'import</p>
               </div>
-              <button
-                onClick={handleUploadAndImport}
-                disabled={importing || !canImport}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                title={!canImport ? `${incompleteFormations.length} formation(s) incomplète(s) - veuillez remplir tous les champs obligatoires` : ''}
-              >
-                {importing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Import en cours...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Importer toutes les formations
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                {/* Export Buttons */}
+                <button
+                  onClick={handleExportCSV}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                  title="Exporter au format CSV"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  CSV
+                </button>
+                <button
+                  onClick={handleExportExcel}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex items-center gap-2"
+                  title="Exporter au format Excel"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Excel
+                </button>
+                {/* Import Button */}
+                <button
+                  onClick={handleUploadAndImport}
+                  disabled={importing || !canImport}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  title={!canImport ? `${incompleteFormations.length} formation(s) incomplète(s) - veuillez remplir tous les champs obligatoires` : ''}
+                >
+                  {importing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Import en cours...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Importer toutes les formations
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {incompleteFormations.length > 0 && (

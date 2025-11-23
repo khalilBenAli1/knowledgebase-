@@ -107,36 +107,51 @@ RÈGLES D'EXTRACTION:
 1. IGNORE COMPLÈTEMENT:
    - Les pages de présentation de l'organisme de formation
    - Les pages de garde, sommaires, index
-   - Les "--- Page Break ---" et marqueurs techniques
+   - Les "--- Page Break ---" et autres marqueurs techniques
    - Les mentions légales, contacts, informations générales
    - Les textes publicitaires ou promotionnels
 
-2. EXTRAIT CHAQUE FORMATION avec le MAXIMUM de détails disponibles:
+2. STRUCTURE D'UN DOCUMENT DE FORMATION (TRÈS IMPORTANT):
+   Une formation typique dans un catalogue a cette structure:
+
+   TITRE DE LA FORMATION
+   - Point 1 (objectif, contenu, ou compétence)
+   - Point 2 (objectif, contenu, ou compétence)
+   - Point 3 (objectif, contenu, ou compétence)
+   Durée: X jours
+   Lieu: Tunis
+
+   ⚠️ ATTENTION: Les BULLET POINTS (-, •, *, →) sous un titre sont TOUJOURS partie de la MÊME formation!
+   ⚠️ NE CRÉE PAS une formation séparée pour chaque bullet point!
+   ⚠️ Les bullet points sont le CONTENU/OBJECTIFS de la formation, pas des formations distinctes!
+
+3. EXTRAIT CHAQUE FORMATION avec le MAXIMUM de détails disponibles:
    - title: Le titre EXACT et COMPLET de la formation (OBLIGATOIRE)
-   - description: La description détaillée incluant objectifs, contenu, programme, compétences acquises (OBLIGATOIRE - sois généreux, inclus tous les détails)
+   - description: La description détaillée incluant TOUS les bullet points, objectifs, contenu, programme, compétences acquises (OBLIGATOIRE - combine tous les points en un seul texte descriptif)
    - duration: La durée exacte si mentionnée (ex: "2 jours", "14 heures", "3 mois")
    - location: Le lieu si mentionné (ex: "Tunis", "En ligne", "Siège social")
    - maxParticipants: Le nombre maximum de participants (nombre uniquement)
    - startDate: La date de début si mentionnée (format: "YYYY-MM-DD")
    - endDate: La date de fin si mentionnée (format: "YYYY-MM-DD")
 
-3. INDICES DE DÉTECTION D'UNE FORMATION:
-   - Titre en gras ou en majuscules
-   - Mots-clés: "Formation", "Stage", "Atelier", "Certification", "Cours", "Séminaire"
-   - Présence d'objectifs pédagogiques
-   - Mention de durée, dates, ou programme
-   - Public cible (ex: "managers", "commerciaux", "techniciens")
+4. COMMENT IDENTIFIER UNE NOUVELLE FORMATION:
+   ✅ C'EST une nouvelle formation si:
+      - Titre distinct en gras/majuscules avec mots comme "Formation", "Atelier", "Cours"
+      - Change de sujet professionnel (ex: passer de "Comptabilité" à "Management")
+      - A sa propre durée et date
 
-4. QUALITÉ DE L'EXTRACTION:
-   - Sois PRÉCIS: copie les titres et descriptions EXACTEMENT comme dans le texte
-   - Sois COMPLET: extrais TOUTES les formations du catalogue, même si elles sont brèves
+   ❌ CE N'EST PAS une nouvelle formation si:
+      - C'est un bullet point sous un titre
+      - C'est un sous-titre ou section du même thème
+      - C'est un objectif pédagogique listé
+      - C'est un élément du programme d'une formation
+
+5. QUALITÉ DE L'EXTRACTION:
+   - Sois PRÉCIS: copie les titres EXACTEMENT comme dans le texte
+   - Sois COMPLET: extrais TOUTES les formations du catalogue
+   - REGROUPE tous les bullet points d'une formation dans sa description
    - NE PAS inventer de données - si une info n'existe pas, omets le champ
    - Si une formation semble incomplète, extrais quand même ce qui est disponible
-
-5. GESTION DES CAS DIFFICILES:
-   - Si le texte OCR est mal formaté, utilise le contexte pour détecter les formations
-   - Si plusieurs formations sont regroupées, sépare-les clairement
-   - Si une formation n'a pas de titre explicite mais a du contenu clair, crée un titre descriptif basé sur le contenu
 
 Format de réponse JSON STRICTEMENT:
 {

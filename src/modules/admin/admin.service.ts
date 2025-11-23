@@ -86,16 +86,6 @@ export class AdminService {
       where: { status: FormationRequestStatus.DECLINED },
     });
 
-    const recentMessages = await this.messagesRepository
-      .createQueryBuilder('message')
-      .select('DATE(message.createdAt)', 'date')
-      .addSelect('COUNT(*)', 'count')
-      .where('message.createdAt > NOW() - INTERVAL \'30 days\'')
-      .groupBy('DATE(message.createdAt)')
-      .orderBy('date', 'DESC')
-      .limit(30)
-      .getRawMany();
-
     return {
       users: {
         total: totalUsers,
@@ -127,10 +117,84 @@ export class AdminService {
         rejected: rejectedFormationRequests,
       },
       feedback: feedbackStats,
-      activity: {
-        last30Days: recentMessages,
-      },
     };
+  }
+
+  async getSevenDayActivity(): Promise<any[]> {
+    // Get last 7 days of activity data
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Get messages per day for last 7 days
+    const messagesPerDay = await this.messagesRepository
+      .createQueryBuilder('message')
+      .select('DATE(message.createdAt)', 'date')
+      .addSelect('COUNT(*)', 'count')
+      .where('message.createdAt >= :sevenDaysAgo', { sevenDaysAgo })
+      .groupBy('DATE(message.createdAt)')
+      .orderBy('date', 'ASC')
+      .getRawMany();
+
+    // Get sessions per day for last 7 days
+    const sessionsPerDay = await this.sessionsRepository
+      .createQueryBuilder('session')
+      .select('DATE(session.createdAt)', 'date')
+      .addSelect('COUNT(*)', 'count')
+      .where('session.createdAt >= :sevenDaysAgo', { sevenDaysAgo })
+      .groupBy('DATE(session.createdAt)')
+      .orderBy('date', 'ASC')
+      .getRawMany();
+
+    // Get documents created per day for last 7 days
+    const documentsPerDay = await this.documentsRepository
+      .createQueryBuilder('document')
+      .select('DATE(document.createdAt)', 'date')
+      .addSelect('COUNT(*)', 'count')
+      .where('document.createdAt >= :sevenDaysAgo', { sevenDaysAgo })
+      .groupBy('DATE(document.createdAt)')
+      .orderBy('date', 'ASC')
+      .getRawMany();
+
+    // Create a map for all 7 days
+    const activityMap = new Map<string, { date: string; messages: number; sessions: number; documents: number }>();
+
+    // Initialize all 7 days with zero counts
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      activityMap.set(dateStr, {
+        date: dateStr,
+        messages: 0,
+        sessions: 0,
+        documents: 0,
+      });
+    }
+
+    // Populate with actual data
+    messagesPerDay.forEach(row => {
+      const dateStr = row.date instanceof Date ? row.date.toISOString().split('T')[0] : row.date;
+      if (activityMap.has(dateStr)) {
+        activityMap.get(dateStr)!.messages = parseInt(row.count);
+      }
+    });
+
+    sessionsPerDay.forEach(row => {
+      const dateStr = row.date instanceof Date ? row.date.toISOString().split('T')[0] : row.date;
+      if (activityMap.has(dateStr)) {
+        activityMap.get(dateStr)!.sessions = parseInt(row.count);
+      }
+    });
+
+    documentsPerDay.forEach(row => {
+      const dateStr = row.date instanceof Date ? row.date.toISOString().split('T')[0] : row.date;
+      if (activityMap.has(dateStr)) {
+        activityMap.get(dateStr)!.documents = parseInt(row.count);
+      }
+    });
+
+    // Convert map to array and return
+    return Array.from(activityMap.values());
   }
 
   async getMostAskedTopics(limit: number = 10): Promise<any[]> {

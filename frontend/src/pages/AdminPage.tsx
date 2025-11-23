@@ -27,23 +27,12 @@ interface Analytics {
   formations?: { total: number; pending: number; approved: number; rejected: number };
 }
 
-// Mock data for time-series charts (in production, fetch from backend)
-const generateMockTimeSeriesData = (days: number = 7) => {
-  const data = [];
-  const today = new Date();
-
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    data.push({
-      date: date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
-      messages: Math.floor(Math.random() * 50) + 20,
-      sessions: Math.floor(Math.random() * 15) + 5,
-      documents: Math.floor(Math.random() * 3) + 1,
-    });
-  }
-  return data;
-};
+interface ActivityData {
+  date: string;
+  messages: number;
+  sessions: number;
+  documents: number;
+}
 
 const COLORS = ['#134a21', '#1a6b2e', '#2d8a45', '#4aa964'];
 
@@ -52,7 +41,7 @@ export default function AdminPage() {
   const isHRAdmin = user?.role?.name === 'Gestionnaire RH';
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeSeriesData, setTimeSeriesData] = useState(generateMockTimeSeriesData(7));
+  const [timeSeriesData, setTimeSeriesData] = useState<ActivityData[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -64,10 +53,22 @@ export default function AdminPage() {
 
   const loadAnalytics = async () => {
     try {
-      const response = await api.get('/admin/analytics');
-      setAnalytics(response.data);
-      // In production, fetch real time-series data here
-      setTimeSeriesData(generateMockTimeSeriesData(7));
+      const [analyticsResponse, activityResponse] = await Promise.all([
+        api.get('/admin/analytics'),
+        api.get('/admin/analytics/7-day-activity'),
+      ]);
+
+      setAnalytics(analyticsResponse.data);
+
+      // Transform activity data to format expected by chart
+      const transformedActivity = activityResponse.data.map((day: ActivityData) => ({
+        date: new Date(day.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
+        messages: day.messages,
+        sessions: day.sessions,
+        documents: day.documents,
+      }));
+
+      setTimeSeriesData(transformedActivity);
     } catch (error) {
       console.error('Failed to load analytics', error);
     } finally {
